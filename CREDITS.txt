@@ -1,0 +1,7 @@
+Ханз эхлэл — ашигласан нээлттэй эх сурвалжууд
+
+Дуудлагын бичлэг: audio-cmn (github.com/hugolpz/audio-cmn), CC BY-SA 4.0
+  - Үг, ханз: Yue Tan; үе: Chen Wang
+Зурлагын өгөгдөл: hanzi-writer-data (Make Me a Hanzi-ээс), Arphic Public License
+Зурлагын хөдөлгөөн: Hanzi Writer (hanziwriter.org), MIT License
+HSK 3.0 (2025) жагсаалт: github.com/krmanik/HSK-3.0

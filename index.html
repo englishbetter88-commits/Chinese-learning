@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ханз эхлэл</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* layout: playful single column; path of nodes → full-screen session with bottom check bar */
+  --bg:#ffffff; --soft:#f4f5f8; --ink:#2b2f3a; --muted:#8a90a0; --line:#e3e6ec;
+  --red:#e2483d; --red-d:#b8342b; --jade:#1fa577; --jade-d:#167f5b; --jade-soft:#d9f5e9;
+  --gold:#f2b632; --gold-d:#c98d12; --sky:#2f8fd8; --sky-d:#2170ab; --bad-soft:#fde3e0;
+  --hz:"Noto Serif SC","Songti SC",serif; --body:"Nunito",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141821; --soft:#1d2230; --ink:#eef1f6; --muted:#8f97aa; --line:#2c3345;
+  --jade-soft:#173a2e; --bad-soft:#3d2120; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#141821; --soft:#1d2230; --ink:#eef1f6; --muted:#8f97aa; --line:#2c3345;
+  --jade-soft:#173a2e; --bad-soft:#3d2120; color-scheme:dark;}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:700 16px/1.45 var(--body)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.screen[hidden]{display:none!important}
+/* chunky 3D buttons */
+.btn{border:2px solid var(--line);border-bottom-width:5px;background:var(--bg);border-radius:16px;padding:12px 18px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;transition:transform .05s}
+.btn:active{transform:translateY(2px);border-bottom-width:3px}
+.btn.go{background:var(--jade);border-color:var(--jade-d);color:#fff}
+.btn.red{background:var(--red);border-color:var(--red-d);color:#fff}
+.btn.sky{background:var(--sky);border-color:var(--sky-d);color:#fff}
+.btn:disabled{background:var(--soft);border-color:var(--line);color:var(--muted);cursor:default;transform:none}
+.btn.wide{width:100%}
+/* top bar */
+.top{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:2px solid var(--line)}
+.top .in{max-width:620px;margin:0 auto;padding:10px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand{font-weight:900;font-size:20px;color:var(--red)}
+.brand span{font-family:var(--hz)}
+.chips{display:flex;gap:14px;font-weight:800;font-variant-numeric:tabular-nums}
+.chips .f{color:#f08a24}.chips .xp{color:var(--gold-d)}.chips .h{color:var(--red)}
+.wrap{max-width:620px;margin:0 auto;padding:16px 16px 120px}
+.goal{border:2px solid var(--line);border-radius:16px;padding:12px 14px;display:grid;gap:8px}
+.goal .row{display:flex;justify-content:space-between;align-items:center}
+.pbar{height:14px;border-radius:8px;background:var(--line);overflow:hidden}
+.pbar i{display:block;height:100%;background:var(--gold);border-radius:8px;transition:width .8s}
+.basics-card{display:flex;align-items:center;justify-content:space-between;gap:12px;border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;padding:12px 14px;margin-top:14px;background:var(--bg);width:100%;text-align:left}
+.basics-card .cs{font:700 24px var(--hz);color:var(--red);letter-spacing:3px}
+/* path */
+.unit{margin:28px 0 8px;border-radius:16px;padding:14px 16px;color:#fff;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:5px solid rgba(0,0,0,.18)}
+.unit small{display:block;opacity:.9;font-size:13px;letter-spacing:.06em;text-transform:uppercase}
+.unit b{font-size:19px}
+.unit .cs{font:700 17px var(--hz);opacity:.9;letter-spacing:1px;text-align:right;max-width:48%;overflow-wrap:anywhere}
+.unit .cs{font-size:18px;letter-spacing:0;max-width:58%;text-wrap:balance;line-height:1.5;opacity:1;flex-shrink:0}.unit .cs .hzg{width:1.15em;height:1.15em;margin:0;vertical-align:-.25em}
+.path{display:flex;flex-direction:column;align-items:center;gap:20px;padding:58px 0 18px}
+.node{position:relative;width:76px;height:70px;border-radius:50%;border:none;border-bottom:7px solid var(--nd);background:var(--nc);color:#fff;font:700 30px/1 var(--hz);display:flex;align-items:center;justify-content:center;transition:transform .05s}
+.node:active{transform:translateY(3px);border-bottom-width:4px}
+.node.lock{--nc:var(--line);--nd:#c9ced8;color:var(--muted);cursor:default}
+.node.done{--nc:var(--gold);--nd:var(--gold-d)}
+.node .ring{position:absolute;inset:-9px -9px -18px -9px;border-radius:50%;border:4px solid var(--nc);opacity:.4;pointer-events:none;animation:ringp 1.6s ease-in-out infinite}
+@keyframes ringp{0%,100%{transform:scale(1);opacity:.45}50%{transform:scale(1.06);opacity:.2}}
+@media (prefers-reduced-motion:reduce){.node .ring{animation:none}}
+.node.cur{animation:bob 1.6s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.ic{width:1.15em;height:1.15em;display:inline-block;vertical-align:-.2em;flex:0 0 auto}
+.chips span{display:inline-flex;align-items:center;gap:4px}
+.toast{display:flex;align-items:center;gap:8px}
+.toast .ic{width:1.4em;height:1.4em}
+.next .ic{width:22px;height:22px}
+.big-ic .ic{width:72px;height:72px}
+.node .ic{width:34px;height:34px;color:#fff}
+/* 3D glossy nodes */
+.node{width:80px;height:76px;border-bottom-width:9px;
+  background:radial-gradient(circle at 34% 26%,rgba(255,255,255,.55) 0 7%,rgba(255,255,255,.18) 18%,transparent 42%),radial-gradient(circle at 50% 120%,rgba(0,0,0,.22),transparent 60%),var(--nc);
+  box-shadow:inset 0 -6px 10px rgba(0,0,0,.18),inset 0 4px 6px rgba(255,255,255,.35),0 10px 14px -6px rgba(20,30,60,.45);
+  text-shadow:0 2px 0 rgba(0,0,0,.22)}
+.node .hzg{width:1.05em;height:1.05em;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+.node .ic{filter:drop-shadow(0 2px 0 rgba(0,0,0,.22))}
+.node.lock{box-shadow:inset 0 -5px 8px rgba(0,0,0,.08),inset 0 4px 6px rgba(255,255,255,.7),0 8px 12px -6px rgba(20,30,60,.25);text-shadow:none}
+.node.lock .hzg,.node.lock .ic{filter:none}
+.node:active{box-shadow:inset 0 -4px 8px rgba(0,0,0,.18),0 4px 8px -4px rgba(20,30,60,.4)}
+.path{gap:38px}
+.node.lock .ic{color:var(--muted)}
+.spk{display:inline-flex;align-items:center;gap:6px}
+.bigspk .ic{width:44px;height:44px}
+.x .ic{width:26px;height:26px}
+.practice{display:inline-flex;align-items:center;gap:8px}
+.bubble{position:absolute;bottom:calc(100% + 18px);left:50%;transform:translateX(-50%);background:var(--bg);border:2px solid var(--line);color:var(--nc);border-radius:12px;padding:6px 12px;font:900 14px var(--body);letter-spacing:.05em;white-space:nowrap;text-transform:uppercase}
+.bubble::after{content:"";position:absolute;top:100%;left:50%;margin-left:-7px;border:7px solid transparent;border-top-color:var(--line)}
+.practice{position:fixed;right:max(16px,calc(50% - 300px));bottom:20px;z-index:6;border-radius:99px;padding:12px 20px}
+/* session */
+.sess{position:fixed;inset:0;background:var(--bg);z-index:20;display:flex;flex-direction:column}
+.shead{max-width:680px;width:100%;margin:0 auto;padding:16px;display:flex;align-items:center;gap:14px}
+.x{background:none;border:none;font-size:26px;color:var(--muted);padding:2px 6px}
+.spbar{flex:1;height:16px;border-radius:9px;background:var(--line);overflow:hidden}
+.spbar i{display:block;height:100%;background:var(--jade);border-radius:9px;transition:width .35s}
+.hearts{color:var(--red);font-weight:900;font-variant-numeric:tabular-nums}
+.sbody{flex:1;overflow:auto}
+.sbody .in{max-width:620px;margin:0 auto;padding:8px 16px 24px;display:grid;gap:16px}
+.title{font-size:22px;font-weight:900;margin:4px 0}
+.newtag{color:var(--sky);font-weight:900;letter-spacing:.06em;font-size:13px;text-transform:uppercase}
+.card{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+@media (max-width:520px){.card{grid-template-columns:1fr;justify-items:center;text-align:center}}
+.wbox{width:260px;height:260px;max-width:100%;position:relative;border:2px solid var(--line);border-radius:18px;background:var(--bg);touch-action:none;overflow:hidden;margin:0 auto}
+.wbox svg{position:absolute;inset:0}
+.wbox svg.g{width:100%;height:100%;pointer-events:none;color:var(--red)}
+.meta{display:grid;gap:4px}
+.meta .py{color:var(--red);font-size:24px;font-weight:800}
+.meta .mn{font-size:22px;font-weight:900}
+.meta .ex{color:var(--muted);font-size:15px}
+.meta .ex b{font-family:var(--hz);color:var(--ink);font-size:18px}
+.spk{border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:var(--bg);padding:6px 12px}
+.prompt{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hzg{width:1.3em;height:1.3em;display:inline-block;vertical-align:-.3em;fill:currentColor;stroke:currentColor;stroke-width:22;stroke-linejoin:round;margin:0 .02em}
+.prompt .hz .hzg{width:1.15em;height:1.15em;vertical-align:-.2em}
+.prompt .hz{font:700 104px/1.1 var(--hz)}
+.prompt .t{font-size:26px;font-weight:900}
+.bigspk{width:96px;height:96px;border-radius:24px;font-size:40px;padding:0;text-transform:none}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.opt{border:2px solid var(--line);border-bottom-width:5px;border-radius:16px;background:var(--bg);padding:14px 10px;min-height:64px;font-size:18px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.opt .k{position:absolute;left:10px;top:8px;font-size:11px;color:var(--muted);border:2px solid var(--line);border-radius:6px;padding:0 5px}
+.opt{position:relative}
+.opt.hz{font:700 34px var(--hz)}
+.opt.sel{border-color:var(--sky);background:#e3f1fc;color:var(--sky-d)}
+:root[data-theme="dark"] .opt.sel{background:#16304a}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .opt.sel{background:#16304a}}
+.opt.good{border-color:var(--jade);background:var(--jade-soft);color:var(--jade-d)}
+.opt.bad{border-color:var(--red);background:var(--bad-soft);color:var(--red)}
+.opt.gone{opacity:.25;pointer-events:none}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.match .col{display:grid;gap:10px}
+.skipline{text-align:center}
+.skipline button{background:none;border:none;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.05em;font-size:13px}
+.sfoot{border-top:2px solid var(--line);transition:background .2s}
+
+/* ===== New Year theme ===== */
+:root{--ny-sky1:#e8f3ff;--ny-sky2:#ffffff}
+:root[data-theme="dark"]{--ny-sky1:#0f1f3a;--ny-sky2:#141821}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--ny-sky1:#0f1f3a;--ny-sky2:#141821}}
+body.ny{background:linear-gradient(180deg,var(--ny-sky1) 0,var(--ny-sky2) 520px) fixed,var(--bg)}
+body.ny::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.1;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg fill='none' stroke='%2390b8e0' stroke-width='1.3' stroke-linecap='round'%3E%3Cg transform='translate(24 28)'%3E%3Cpath d='M0-8V8M-7-4 7 4M-7 4 7-4M0-8l-2.5-2.5M0-8l2.5-2.5M0 8l-2.5 2.5M0 8l2.5 2.5'/%3E%3C/g%3E%3Cg transform='translate(88 84) scale(.7)'%3E%3Cpath d='M0-8V8M-7-4 7 4M-7 4 7-4'/%3E%3C/g%3E%3C/g%3E%3Ccircle cx='70' cy='30' r='1.6' fill='%2390b8e0'/%3E%3Ccircle cx='20' cy='92' r='1.3' fill='%2390b8e0'/%3E%3C/svg%3E")}
+body.ny .screen{position:relative;z-index:1}
+body.ny #s-path .top,body.ny #s-pro .top{background:linear-gradient(180deg,#0f3d2e,#165c43);border-bottom:none;color:#fff}
+body.ny #s-path .top .brand{color:#fff}
+body.ny #s-path .top .brand span .hzg{color:#ffd166}
+body.ny #s-path .chips .f{color:#ffb35c}body.ny #s-path .chips .xp{color:#ffd166}body.ny #s-path .chips .h{color:#ff8a80}
+.lights{position:absolute;left:0;right:0;bottom:-15px;height:22px;pointer-events:none;overflow:visible}
+.lights svg{width:100%;height:22px;display:block}
+.lights .b{animation:tw 1.8s ease-in-out infinite}
+.lights .b:nth-child(3n){animation-delay:.6s}.lights .b:nth-child(3n+1){animation-delay:1.2s}
+@keyframes tw{0%,100%{opacity:1;filter:drop-shadow(0 0 4px currentColor)}50%{opacity:.35;filter:none}}
+#snow{position:fixed;inset:0;pointer-events:none;z-index:0;width:100%;height:100%}
+body.ny .wrap{padding-top:28px}
+.unit{position:relative}
+body.ny .unit::before{content:"";position:absolute;left:-3px;right:-3px;top:-6px;height:20px;pointer-events:none;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 26' preserveAspectRatio='none'%3E%3Cpath d='M0 14 C0 4 8 2 20 3 C30 4 34 9 44 8 C56 7 60 1 74 2 C86 3 88 10 100 9 C112 8 116 2 130 3 C142 4 146 11 158 10 C170 9 176 2 190 3 C200 4 200 8 200 14 C200 18 190 17 180 18 C178 22 174 22 172 18 L120 18 C118 24 113 24 111 18 L60 18 C58 21 54 21 52 18 L0 18Z' fill='white'/%3E%3C/svg%3E") 0 0/100% 100% no-repeat;filter:drop-shadow(0 2px 1.5px rgba(0,40,90,.22))}
+body.ny .node.done{--nc:#e2483d;--nd:#b8342b}
+body.ny .node.done::after{content:"";position:absolute;top:-11px;left:50%;width:18px;height:11px;margin-left:-9px;border-radius:4px 4px 2px 2px;background:linear-gradient(90deg,#b8860b,#ffe9a6 40%,#d4a017 70%,#8f6a08);box-shadow:0 1px 2px rgba(0,0,0,.3);pointer-events:none}
+body.ny .node.done::before{content:"";position:absolute;top:-19px;left:50%;width:10px;height:10px;margin-left:-5px;border:2px solid #c9a227;border-radius:50%;pointer-events:none}
+.nycard{display:flex;align-items:center;gap:14px;border-radius:16px;padding:12px 14px;margin-bottom:14px;color:#fff;
+  background:radial-gradient(circle at 85% 20%,rgba(255,255,255,.18) 0 18px,transparent 19px),linear-gradient(135deg,#b8342b,#e2483d);border-bottom:5px solid #8f2820;position:relative;overflow:hidden}
+.nycard svg.tree{width:52px;height:60px;flex:none}
+.nycard b{font-size:18px;display:block}.nycard span{opacity:.92;font-size:14px}
+.nycard .num{margin-left:auto;text-align:center;font:900 30px/1 var(--body);color:#ffe08a}.nycard .num small{display:block;font-size:11px;letter-spacing:.06em;color:#fff;opacity:.9}
+.nysw{border:none;background:rgba(255,255,255,.15);border-radius:10px;width:34px;height:34px;display:grid;place-items:center;color:#fff;padding:0}
+.nysw svg{width:20px;height:20px}
+@media (prefers-reduced-motion:reduce){.lights .b{animation:none}}
+
+.brand{display:flex;align-items:center;white-space:nowrap}
+.lvsel{margin-left:10px;display:inline-flex;align-items:center;gap:3px;border:none;background:rgba(0,0,0,.06);border-radius:10px;padding:5px 8px 5px 10px;font:900 15px var(--body);color:inherit;letter-spacing:.02em}
+body.ny #s-path .lvsel{background:rgba(255,255,255,.14);color:#fff}
+.lvsel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+.lvsel[aria-expanded="true"] svg{transform:rotate(180deg)}
+.lvmenu{position:absolute;top:100%;left:50%;transform:translateX(-50%);width:min(380px,calc(100% - 20px));margin-top:10px;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:18px;box-shadow:0 18px 40px -12px rgba(10,20,40,.4);padding:8px;z-index:30;display:grid;gap:4px;animation:mdrop .18s ease-out}
+@keyframes mdrop{from{opacity:0;transform:translate(-50%,-6px)}to{opacity:1;transform:translate(-50%,0)}}
+.lvmenu button{display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:10px;text-align:left;border:none;background:none;border-radius:12px;padding:9px 10px}
+.lvmenu button:hover,.lvmenu button:focus-visible{background:var(--soft)}
+.lvmenu button.on{background:var(--jade-soft)}
+.lvmenu .n{font:900 16px var(--body)}.lvmenu button.on .n{color:var(--jade-d)}
+.lvmenu .pb{height:8px;border-radius:5px;background:var(--line);overflow:hidden}.lvmenu .pb i{display:block;height:100%;background:var(--gold)}
+.lvmenu .c{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+.lvmenu .pro{font:900 10px var(--body);letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#9a5bd6,#2f8fd8);border-radius:6px;padding:3px 6px}
+.lvmenu .soon{opacity:.5}
+.lvmenu[hidden]{display:none!important}
+.lvmenu .n{white-space:nowrap}
+@media (max-width:440px){.bname{display:none}}
+
+/* bottom nav */
+.bnav{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--bg);border-top:2px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:6px max(8px,calc(50% - 310px)) calc(6px + env(safe-area-inset-bottom))}
+.bnav[hidden]{display:none}
+.bnav button{border:2px solid transparent;background:none;border-radius:14px;padding:5px 2px 4px;display:grid;justify-items:center;gap:1px;color:var(--muted);font-size:11.5px;font-weight:800;letter-spacing:.02em}
+.bnav button .ic{width:26px;height:26px;transition:transform .15s}
+.bnav button:active .ic{transform:scale(.88)}
+.bnav button.on{color:var(--sky);background:color-mix(in srgb,var(--sky) 10%,transparent);border-color:color-mix(in srgb,var(--sky) 35%,transparent)}
+.bnav button[data-go="prac"]{color:var(--sky)}
+body.ny .bnav{background:linear-gradient(180deg,#165c43,#0f3d2e);border-top:none}
+body.ny .bnav button{color:rgba(255,255,255,.7)}
+body.ny .bnav button.on{color:#fff;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.25)}
+body.ny .bnav button[data-go="prac"]{color:#9fd8ff}
+/* me screen */
+.mehead{font:900 24px var(--body);margin:6px 0 14px}
+.mtiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.mtile{border:2px solid var(--line);border-radius:16px;padding:12px 14px;display:flex;gap:10px;align-items:center;background:var(--bg)}
+.mtile .ic{width:30px;height:30px}
+.mtile b{display:block;font:900 22px/1.1 var(--body);font-variant-numeric:tabular-nums}.mtile span{font-size:12.5px;color:var(--muted)}
+.mcard{border:2px solid var(--line);border-radius:16px;padding:14px;background:var(--bg)}
+.mcard h2{font:900 17px var(--body);margin:0 0 10px}
+.wbars{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;align-items:end;height:120px}
+.wbars div{display:grid;align-content:end;justify-items:center;gap:4px;height:100%}
+.wbars i{width:100%;max-width:30px;border-radius:7px 7px 3px 3px;background:var(--gold);min-height:4px}
+.wbars .t i{background:var(--jade)}
+.wbars small{font-size:11px;color:var(--muted);font-weight:800}.wbars em{font-style:normal;font-size:11px;font-weight:900;color:var(--ink)}
+.lvrow{display:grid;grid-template-columns:62px 1fr 74px;gap:10px;align-items:center;padding:5px 0;font-size:14px}
+.lvrow .pb{height:10px;border-radius:6px;background:var(--line);overflow:hidden}.lvrow .pb i{display:block;height:100%;background:var(--jade)}
+.lvrow .c{text-align:right;color:var(--muted);font-size:12.5px;font-variant-numeric:tabular-nums}
+.chgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
+.chgrid button{aspect-ratio:1;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:var(--bg);font-size:24px;display:grid;place-items:center;padding:0;position:relative}
+.chgrid button i{position:absolute;left:5px;right:5px;bottom:3px;height:3px;border-radius:2px;background:var(--line)}
+.chgrid button i b{display:block;height:100%;border-radius:2px;background:var(--jade)}
+.setrow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.setrow:first-of-type{border-top:none}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:none;background:none;padding:6px 10px;font-size:13px;font-weight:800;color:var(--muted)}
+.seg button.on{background:var(--sky);color:#fff}
+/* ---- celebrate ---- */
+.fx{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden}
+.fx i{position:absolute;display:block;will-change:transform,opacity}
+.fx .plus{position:absolute;font:900 22px var(--body);color:var(--jade-d);white-space:nowrap;text-shadow:0 2px 0 #fff,0 0 12px #fff}
+.fx .combo{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font:900 46px/1 var(--body);color:var(--gold);-webkit-text-stroke:2px var(--gold-d);text-shadow:0 5px 0 var(--gold-d);white-space:nowrap}
+.fx .combo small{display:block;font-size:17px;-webkit-text-stroke:0;color:var(--gold-d);text-shadow:none;text-align:center;margin-top:6px;letter-spacing:.04em}
+.fx .glow{position:absolute;inset:0;box-shadow:inset 0 0 0 0 var(--jade)}
+.okmark{width:44px;height:44px;flex:none;border-radius:50%;background:var(--jade);display:grid;place-items:center;box-shadow:0 4px 0 var(--jade-d)}
+.okmark svg{width:26px;height:26px;fill:none;stroke:#fff;stroke-width:4;stroke-linecap:round;stroke-linejoin:round}
+.okmark path{stroke-dasharray:40;stroke-dashoffset:40;animation:okdraw .35s .12s ease-out forwards}
+.sfoot.good .fb,.sfoot.bad .fb{display:flex;align-items:center;gap:12px}
+.sfoot.good .fb .h{animation:hpop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes okdraw{to{stroke-dashoffset:0}}
+@keyframes hpop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
+.sfoot.good .in,.sfoot.bad .in{animation:footup .38s cubic-bezier(.25,1.4,.5,1)}
+@keyframes footup{from{transform:translateY(60%);opacity:.2}to{transform:none;opacity:1}}
+.pop{animation:popok .55s cubic-bezier(.3,1.7,.5,1)}
+@keyframes popok{0%{transform:scale(1)}35%{transform:scale(1.1) rotate(-1.5deg);box-shadow:0 0 0 8px rgba(31,165,119,.25)}100%{transform:scale(1);box-shadow:0 0 0 0 rgba(31,165,119,0)}}
+.shake{animation:shk .42s}
+@keyframes shk{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(3px)}}
+.spbar i.shine{background-image:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.75) 50%,transparent 70%);background-size:200% 100%;animation:shine .7s ease-out}
+@keyframes shine{from{background-position:150% 0}to{background-position:-60% 0}}
+@media (prefers-reduced-motion:reduce){.fx{display:none}.pop,.shake,.sfoot .in,.sfoot .fb .h,.spbar i.shine{animation:none!important}.okmark path{stroke-dashoffset:0;animation:none}}
+
+.sfoot .in{max-width:680px;margin:0 auto;padding:16px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap;min-height:100px}
+.sfoot.good{background:var(--jade-soft);border-color:transparent}
+.sfoot.bad{background:var(--bad-soft);border-color:transparent}
+.fb{display:grid;gap:2px}
+.fb .h{font-size:22px;font-weight:900}
+.sfoot.good .fb .h{color:var(--jade-d)} .sfoot.bad .fb .h{color:var(--red)}
+.fb .s{font-size:15px}
+.fb>div{display:grid;gap:2px}.fb .h{display:block;transform-origin:left center}
+.fb .s b{font-family:var(--hz)}
+.sfoot .btn{min-width:170px}
+.end{text-align:center;display:grid;gap:18px;justify-items:center;padding-top:30px}
+.end .big{animation:hpop .6s cubic-bezier(.3,1.6,.5,1);font:900 34px var(--body);color:var(--gold-d)}
+.tiles{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+.tile{border:2px solid var(--c);border-radius:14px;overflow:hidden;min-width:110px}
+.tile small{display:block;background:var(--c);color:#fff;font-weight:900;font-size:12px;padding:4px 8px;letter-spacing:.05em;text-transform:uppercase}
+.tile b{display:block;padding:10px;font-size:22px;color:var(--c);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted);font-weight:700}
+/* basics */
+.strokes{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.sk{border:2px solid var(--line);border-radius:16px;padding:10px;display:grid;gap:2px}
+.sk svg{width:72px;height:72px;background:var(--soft);border-radius:10px}
+.sk .hz{font:700 15px var(--hz);color:var(--red)}
+.rule{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;border:2px solid var(--line);border-radius:16px;padding:10px}
+.rbox{width:100px;height:100px;position:relative;background:var(--soft);border-radius:12px;cursor:pointer}
+.rbox svg{position:absolute;inset:0}
+.rule .zh{font:700 14px var(--hz);color:var(--red)}
+.back{background:none;border:none;color:var(--muted);font-weight:800;padding:0}
+h2{font-size:20px;font-weight:900;margin:18px 0 10px}
+.probtn{margin-left:8px;font:900 11px var(--body);letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#9a5bd6,#2f8fd8);border:none;border-radius:8px;padding:4px 8px;vertical-align:3px}
+.today{border:2px solid var(--gold);border-radius:16px;padding:12px 14px;margin-top:14px;display:grid;gap:8px;background:rgba(242,182,50,.08)}
+.today .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.btn.sm{padding:6px 12px;font-size:12px;border-radius:12px}
+.prohero{text-align:center;display:grid;gap:6px;justify-items:center;padding:8px 0}
+.prohero h1{margin:0;font-size:24px;font-weight:900}
+.protag{font:900 13px var(--body);letter-spacing:.12em;color:#fff;background:linear-gradient(135deg,#9a5bd6,#2f8fd8);border-radius:10px;padding:5px 12px}
+.feat{display:grid;gap:10px}
+.fi{display:flex;gap:12px;align-items:center;border:2px solid var(--line);border-radius:14px;padding:10px 12px}
+.fi .ic{width:28px;height:28px}
+.fi b{display:block}.fi span{font-size:13px}
+.pcard{border:2px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px}
+.pcard.accent{border-color:var(--sky);background:rgba(47,143,216,.07)}
+.pcard h2{margin:0;font-size:18px}
+.row2{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.bigpct{font-size:30px;font-weight:900;color:var(--jade-d);font-variant-numeric:tabular-nums}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kpis div{background:var(--soft);border-radius:12px;padding:8px 10px;display:grid}
+.kpis b{font-size:20px;font-variant-numeric:tabular-nums}.kpis span{font-size:12px;color:var(--muted)}
+.phases{display:grid;gap:8px}
+.phases .ph{display:flex;gap:10px;align-items:flex-start}
+.phases .ph b{display:block}.phases .ph span{font-size:13px}
+.dotn{flex:0 0 24px;height:24px;border-radius:50%;background:var(--jade);color:#fff;font-size:13px;display:grid;place-items:center}
+.warnbox{border-radius:12px;background:var(--bad-soft);color:var(--ink);padding:10px 12px;font-size:14px}
+.linkb{background:none;border:none;color:var(--sky-d);font-weight:900;text-decoration:underline;padding:0}
+.todo{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.todo>div{background:var(--soft);border-radius:12px;padding:10px;display:grid;gap:4px}
+.todo b{font-size:22px;font-variant-numeric:tabular-nums}
+.row3{display:flex;gap:8px;flex-wrap:wrap}
+.pass{background:var(--jade-soft);border-radius:12px;padding:8px 12px;font-size:14px}
+.mockgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px}
+.mockb{border:2px solid var(--line);border-bottom-width:4px;border-radius:14px;background:var(--bg);padding:8px;display:grid;justify-items:center}
+.mockb span{font-size:12px;color:var(--muted)}
+.rep{width:100%;height:auto}
+.legend{display:flex;gap:14px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.lvbars{width:100%;max-width:420px;display:grid;gap:8px}
+.lvres{display:grid;grid-template-columns:72px 1fr 44px;gap:10px;align-items:center;text-align:left;font-variant-numeric:tabular-nums}
+.note2{background:var(--soft);border-radius:12px;padding:10px 12px;font-size:14px;max-width:420px}
+.chipsel{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.din{font:inherit;font-size:18px;padding:12px;border:2px solid var(--line);border-radius:14px;background:var(--bg);color:var(--ink);width:100%}
+.lvt.locked small{color:#9a5bd6}
+.lvtabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin-top:14px}
+.lvt{min-width:0;border:2px solid var(--line);border-bottom-width:4px;border-radius:12px;background:var(--bg);padding:5px 2px 4px;font-weight:900;display:grid;justify-items:center;line-height:1.1}
+.lvt .lk{font-size:9px;letter-spacing:.06em;color:var(--muted);font-weight:800}.lvt.on .lk{color:var(--jade-d)}
+.lvt b{font-size:17px;white-space:nowrap}
+.lvt small{font-size:9.5px;white-space:nowrap;letter-spacing:-.02em;color:var(--muted);font-weight:800;font-variant-numeric:tabular-nums}
+.lvt.on{border-color:var(--jade);background:var(--jade-soft);color:var(--jade-d)}
+.lvt.soon{opacity:.5}
+.hsk{border:2px solid var(--line);border-radius:16px;padding:14px;margin-top:14px;display:grid;gap:10px}
+.hsk .top2{display:flex;justify-content:space-between;align-items:flex-end;gap:10px}
+.hsk .pct{font-size:30px;font-weight:900;color:var(--jade-d);font-variant-numeric:tabular-nums;line-height:1}
+.hsk .pbar i{background:var(--jade)}
+.hsk .next{display:flex;align-items:center;gap:10px;background:var(--soft);border-radius:12px;padding:8px 12px;font-size:14px}
+.hsk .next b{color:var(--gold-d)}
+.ticks{position:relative;height:16px;font-size:11px;color:var(--muted)}
+.ticks span{position:absolute;transform:translateX(-50%);font-variant-numeric:tabular-nums}
+.ticks span.got{color:var(--jade-d);font-weight:900}
+.unit .cnt{display:block;font-size:12px;opacity:.9;margin-top:2px}
+.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,calc(-100% - 40px));z-index:50;background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 16px;font-weight:900;box-shadow:0 6px 20px rgba(0,0,0,.2);transition:transform .3s;max-width:90vw;text-align:center}
+.toast.on{transform:translate(-50%,0)}
+.mile{border:2px solid var(--gold);background:rgba(242,182,50,.12);border-radius:16px;padding:12px 16px;display:grid;gap:4px;justify-items:center}
+.mile .t{font-size:20px;font-weight:900;color:var(--gold-d)}
+.grow{width:100%;max-width:420px;display:grid;gap:6px;text-align:left}
+.grow .row{display:flex;justify-content:space-between;font-size:14px}
+.reads{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.reads span{border:2px solid var(--line);border-radius:12px;padding:6px 10px;font:700 20px var(--hz)}
+.reads small{display:block;font:700 11px var(--body);color:var(--muted);text-align:center}
+@media (prefers-reduced-motion:reduce){.node.cur{animation:none}*{transition:none!important}}
+</style>
+</head>
+<body>
+<canvas id="snow" aria-hidden="true"></canvas>
+
+<!-- PATH -->
+<div class="screen" id="s-path">
+  <div class="top" style="position:sticky"><div class="lvmenu" id="lvMenu" role="listbox" aria-label="HSK түвшин" hidden></div><div class="lights" aria-hidden="true"></div><div class="in">
+    <div class="brand"><span>汉</span><span class="bname"> Ханз эхлэл</span> <button type="button" class="lvsel" id="lvSel" aria-haspopup="listbox" aria-expanded="false"><b id="lvSelT">HSK 1</b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button><button type="button" class="probtn" id="proBtn">PRO</button></div>
+    <div class="chips" aria-label="Статистик">
+      <span class="f" title="Өдөр дараалан"><i data-ic="flame"></i><span id="tStreak">0</span></span>
+      <span class="xp" title="XP оноо"><i data-ic="bolt"></i><span id="tXp">0</span></span>
+      <span class="h" title="Зүрх"><i data-ic="heart"></i><span id="tHearts">5</span></span>
+      <button type="button" class="nysw" id="nySw" aria-label="Шинэ жилийн чимэглэл асаах/унтраах"></button>
+    </div>
+  </div></div>
+  <div class="wrap">
+    <div class="nycard" id="nyCard" hidden></div>
+    <div class="goal">
+      <div class="row"><span>Өдрийн зорилго</span><span class="muted" id="gTxt">0 / 20 XP</span></div>
+      <div class="pbar"><i id="gBar" style="width:0"></i></div>
+    </div>
+    <div class="today" id="todayCard" hidden></div>
+    
+    <div class="hsk" id="hskCard"></div>
+    <button class="basics-card" type="button" id="toBasics">
+      <span><b>Эхлээд: үндсэн зурлага ба дүрэм</b><br><span class="muted">Ханз бүр 8 үндсэн зурлагаас бүтдэг</span></span>
+      <span class="cs">一丨丿</span>
+    </button>
+    <div id="path"></div>
+  </div>
+  <button class="btn sky practice" id="pracBtn" type="button" title="Сурсан ханзаа давтах" hidden><i data-ic="dumbbell"></i>Давтах</button>
+</div>
+
+<!-- BASICS -->
+<div class="screen" id="s-basics" hidden>
+  <div class="wrap" style="padding-bottom:40px">
+    <button class="back" id="basicsBack" type="button"><i data-ic="back"></i> Буцах</button>
+    <h2>8 үндсэн зурлага</h2>
+    <div class="strokes" id="bStrokes"></div>
+    <h2>Зурлагын дарааллын 7 дүрэм</h2>
+    <p class="muted" style="margin-top:-6px">Ханзан дээр дарвал дахин бичиж харуулна</p>
+    <div style="display:grid;gap:10px" id="bRules"></div>
+    <div style="margin-top:18px"><button class="btn go wide" id="basicsGo" type="button">Хичээл эхлэх</button></div>
+  </div>
+</div>
+
+<!-- ME -->
+<div class="screen" id="s-me" hidden>
+  <div class="wrap" style="padding-bottom:110px">
+    <h1 class="mehead">Миний ахиц</h1>
+    <div id="meBody" style="display:grid;gap:14px"></div>
+  </div>
+</div>
+
+<nav class="bnav" id="bnav" aria-label="Үндсэн цэс">
+  <button type="button" data-go="path"><i data-ic="home"></i><span>Хичээл</span></button>
+  <button type="button" data-go="prac"><i data-ic="dumbbell"></i><span>Давтах</span></button>
+  <button type="button" data-go="me"><i data-ic="chart"></i><span>Ахиц</span></button>
+  <button type="button" data-go="pro"><i data-ic="crown"></i><span>Pro</span></button>
+</nav>
+
+<!-- PRO -->
+<div class="screen" id="s-pro" hidden>
+  <div class="wrap" style="padding-bottom:110px">
+    <button class="back" id="proBack" type="button"><i data-ic="back"></i> Буцах</button>
+    <div id="proBody" style="display:grid;gap:14px;margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- SESSION -->
+<div class="sess screen" id="s-sess" hidden>
+  <div class="shead">
+    <button class="x" id="quit" type="button" aria-label="Гарах"><i data-ic="close"></i></button>
+    <div class="spbar"><i id="sBar"></i></div>
+    <span class="hearts" id="sHearts"></span>
+  </div>
+  <div class="sbody"><div class="in" id="sBody"></div></div>
+  <div class="sfoot" id="sFoot"><div class="in">
+    <div class="fb" id="fb"></div>
+    <button class="btn go" id="act" type="button" disabled>Шалгах</button>
+  </div></div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="hanzi-writer.min.js"></script>
+<script>
+const IC={
+ flame:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12.6 1.8c.4 3-1.2 4.6-2.8 6.3C8.2 9.8 6.5 11.6 6.5 14.6a5.5 5.5 0 0 0 11 0c0-2.6-1.2-4.3-2.2-5.5-.3 1.4-1 2.3-1.9 2.6.6-3.4-.2-7.1-.8-9.9Z" fill="#ff8a1f"/><path d="M12.2 11.4c.2 1.6-.6 2.5-1.4 3.4-.6.7-1.1 1.4-1.1 2.5a2.6 2.6 0 0 0 5.2 0c0-1.5-.8-2.6-1.6-3.3-.1.6-.4 1-.8 1.2.1-1.4-.1-2.7-.3-3.8Z" fill="#ffd34d"/></svg>',
+ bolt:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M13.5 1.5 4.8 13.2c-.4.5 0 1.2.6 1.2h5.1l-1.3 7.6c-.1.6.7.9 1 .4l8.7-11.7c.4-.5 0-1.2-.6-1.2h-5.1l1.3-7.6c.1-.6-.7-.9-1-.4Z" fill="#f2b632"/><path d="M13.5 1.5 9.2 7.3l3.1.2 1.2-6Z" fill="#ffe08a"/></svg>',
+ heart:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 21s-7.8-4.7-9.6-9.7C1.2 7.9 3.4 4.5 6.8 4.5c2.1 0 3.6 1.2 4.4 2.5.2.3.4.3.6 0 .8-1.3 2.3-2.5 4.4-2.5 3.4 0 5.6 3.4 4.4 6.8C18.8 16.3 12 21 12 21Z" fill="#e2483d"/><path d="M6.6 7.2c-1.3.2-2.2 1.4-2 2.8" stroke="#ffb3ad" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>',
+ heartbreak:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M11.2 6.9 9.5 10.5l2.6 2-1.7 3.6 1.6 4.8S4.2 16.3 2.4 11.3C1.2 7.9 3.4 4.5 6.8 4.5c2 0 3.5 1.1 4.4 2.4Z" fill="#e2483d"/><path d="m13 7 1.6 3.5-2.4 2.1 1.9 3.6L12.6 21s6.2-4.7 9-9.7c1.2-3.4-1-6.8-4.4-6.8-1.9 0-3.4 1.1-4.2 2.5Z" fill="#b8342b"/></svg>',
+ flag:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M5 2.5a1 1 0 0 1 1 1V21a1 1 0 1 1-2 0V3.5a1 1 0 0 1 1-1Z" fill="#8a90a0"/><path d="M6 4h11.2c.8 0 1.2.9.7 1.5L15.6 8.3l2.3 2.8c.5.6.1 1.5-.7 1.5H6V4Z" fill="#1fa577"/><path d="M6 4h5v8.6H6z" fill="#167f5b" opacity=".35"/></svg>',
+ trophy:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 3h10v5.5a5 5 0 0 1-10 0V3Z" fill="#f2b632"/><path d="M7 4.5H4.5a.5.5 0 0 0-.5.5c0 2.5 1.6 4.4 3.6 4.9M17 4.5h2.5a.5.5 0 0 1 .5.5c0 2.5-1.6 4.4-3.6 4.9" stroke="#c98d12" stroke-width="1.6" fill="none" stroke-linecap="round"/><path d="M10.6 13.2h2.8l.6 4h-4l.6-4Z" fill="#c98d12"/><rect x="7.5" y="17.2" width="9" height="3.3" rx="1" fill="#c98d12"/><path d="M9.3 4.6v4" stroke="#ffe08a" stroke-width="1.6" stroke-linecap="round"/></svg>',
+ medal:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M7 1.8h4l2.2 6.5-4 1.2L7 1.8Z" fill="#2f8fd8"/><path d="M17 1.8h-4l-2.2 6.5 4 1.2L17 1.8Z" fill="#e2483d"/><circle cx="12" cy="15" r="6.8" fill="#f2b632"/><circle cx="12" cy="15" r="4.8" fill="#ffd34d"/><path d="m12 11.8 1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3 1-2Z" fill="#c98d12"/></svg>',
+ star:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 2.5c.4 0 .7.2.9.6l2.3 4.8 5.2.7c.8.1 1.1 1.1.5 1.7l-3.8 3.6.9 5.2c.1.8-.7 1.4-1.5 1L12 17.6l-4.6 2.5c-.7.4-1.6-.2-1.5-1l.9-5.2-3.8-3.6c-.6-.6-.3-1.6.5-1.7l5.2-.7 2.3-4.8c.2-.4.6-.6 1-.6Z" fill="currentColor"/></svg>',
+ crown:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M3 7.5 7.5 11 12 4l4.5 7L21 7.5 19.2 18H4.8L3 7.5Z" fill="#f2b632"/><rect x="4.8" y="18" width="14.4" height="2.6" rx="1" fill="#c98d12"/><circle cx="12" cy="13.5" r="1.6" fill="#e2483d"/></svg>',
+ sparkle:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 2c.6 4.6 2.4 7.4 8 8.5v1C14.4 12.6 12.6 15.4 12 20h-1c-.6-4.6-2.4-7.4-8-8.5v-1c5.6-1.1 7.4-3.9 8-8.5h1Z" fill="#9a5bd6"/><circle cx="19" cy="4.5" r="1.6" fill="#f2b632"/></svg>',
+ speaker:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4 9.2h3.2L11.6 5c.6-.5 1.4-.1 1.4.7v12.6c0 .8-.8 1.2-1.4.7l-4.4-4.2H4a1 1 0 0 1-1-1v-3.6a1 1 0 0 1 1-1Z" fill="currentColor"/><path d="M16 8.5a5 5 0 0 1 0 7M18.6 6a8.6 8.6 0 0 1 0 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>',
+ replay:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/><path d="M4 3.5v4.6h4.6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+ close:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg>',
+ check:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+ back:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M15 5 8 12l7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>',
+ home:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M3.5 11 12 3.8 20.5 11v8.7c0 .7-.6 1.3-1.3 1.3h-4.4v-6h-5.6v6H4.8c-.7 0-1.3-.6-1.3-1.3V11Z" fill="currentColor"/></svg>',
+  chart:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="3" y="12" width="4.5" height="9" rx="1.2" fill="currentColor"/><rect x="9.75" y="7" width="4.5" height="14" rx="1.2" fill="currentColor"/><rect x="16.5" y="3" width="4.5" height="18" rx="1.2" fill="currentColor"/></svg>',
+  dumbbell:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><rect x="2" y="8.5" width="3" height="7" rx="1.2" fill="currentColor"/><rect x="5" y="6.5" width="3" height="11" rx="1.2" fill="currentColor"/><rect x="19" y="8.5" width="3" height="7" rx="1.2" fill="currentColor"/><rect x="16" y="6.5" width="3" height="11" rx="1.2" fill="currentColor"/><rect x="8" y="10.8" width="8" height="2.4" rx="1" fill="currentColor"/></svg>',
+ infinity:'<svg viewBox="0 0 24 24" class="ic" aria-hidden="true"><path d="M12 12c-2-2.6-3.6-4-5.5-4a4 4 0 0 0 0 8c1.9 0 3.5-1.4 5.5-4Zm0 0c2 2.6 3.6 4 5.5 4a4 4 0 0 0 0-8c-1.9 0-3.5 1.4-5.5 4Z" stroke="#e2483d" stroke-width="2.4" fill="none"/></svg>'
+};
+function hydrate(root){(root||document).querySelectorAll('i[data-ic]').forEach(e=>{e.outerHTML=IC[e.dataset.ic]})}
+const LEVELS=[{id:'L1',name:'HSK 1',n:246,ready:1},{id:'L2',name:'HSK 2',n:125,ready:1},{id:'L3',name:'HSK 3',n:284,ready:1},{id:'L4',name:'HSK 4',n:441,ready:1},{id:'L5',name:'HSK 5',n:431,ready:1},{id:'L6',name:'HSK 6',n:413,ready:1},{id:'L79',name:'HSK 7–9',n:1148,ready:1}];
+const LD={};let S={};let LESSONS=[],NODES=[],CH={},ALL=[],ALLG=[],CURLV='L1';const AUD={ch:{},w:{}};
+const $=id=>document.getElementById(id);
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const dstr=t=>t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+const today=()=>dstr(new Date());
+const addDays=n=>{const t=new Date();t.setDate(t.getDate()+n);return dstr(t)};
+const COLORS=[['#e2483d','#b8342b'],['#1fa577','#167f5b'],['#2f8fd8','#2170ab'],['#9a5bd6','#7442a8'],['#f08a24','#c06a12']];
+
+/* ---------- characters and path ---------- */
+function buildNodes(lv,units){const out=[];units.forEach((l,ui)=>{
+  const cs=l.c.map(c=>c[0]);const k=Math.ceil(cs.length/4);const base=Math.floor(cs.length/k),extra=cs.length%k;
+  let p=0;for(let i=0;i<k;i++){const n=base+(i<extra?1:0);out.push({id:lv+':'+out.length,i:out.length,lv,u:ui,type:'learn',chars:cs.slice(p,p+n)});p+=n}
+  out.push({id:lv+':'+out.length,i:out.length,lv,u:ui,type:'review',chars:cs})});return out}
+const LOADING={};
+function loadLevel(id){if(LD[id])return Promise.resolve(LD[id]);if(!LOADING[id])LOADING[id]=(async()=>{const L=lvMeta(id);const d=await (await fetch('levels/'+L.id+'.json')).json();
+    d.nodes=buildNodes(L.id,d.units);d.all=[];
+    d.units.forEach((u,ui)=>u.c.forEach(c=>{const o={ch:c[0],py:c[1],mn:c[2],ew:c[3],ep:c[4],em:c[5],u:ui,lv:L.id};d.all.push(o);if(!CH[c[0]])CH[c[0]]=o}));
+    Object.assign(S,d.strokes);
+    for(const k in d.aud.ch)if(!AUD.ch[k])AUD.ch[k]={lv:L.id,s:d.aud.ch[k]};
+    for(const k in d.aud.w)if(!AUD.w[k])AUD.w[k]={lv:L.id,s:d.aud.w[k]};
+    LD[L.id]=d;
+    ALLG=LEVELS.filter(l=>LD[l.id]).flatMap(l=>LD[l.id].all);
+    d.nodes.forEach(n=>{if(!P.done[n.id]&&n.chars.every(c=>P.srs[c]))P.done[n.id]=1});save();return d})().catch(e=>{delete LOADING[id];throw e});return LOADING[id]}
+async function loadLevels(){
+  Object.keys(P.done).forEach(k=>{if(!k.includes(':'))delete P.done[k]});
+  const want=[...new Set(['L1',P.level||'L1',...(P.touched||[])])].filter(id=>lvMeta(id));
+  await Promise.all(want.map(loadLevel));
+  setLevel(P.level&&LD[P.level]&&(P.pro||!['L5','L6','L79'].includes(P.level))?P.level:'L1');
+}
+function setLevel(lv){CURLV=lv;P.level=lv;P.touched=[...new Set([...(P.touched||[]),lv])];save();const d=LD[lv];LESSONS=d.units;NODES=d.nodes;ALL=d.all}
+const lvLearned=lv=>(LD[lv]?LD[lv].all:[]).filter(x=>P.srs[x.ch]).length;
+const lvMeta=lv=>LEVELS.find(l=>l.id===lv);
+
+/* ---------- state ---------- */
+let P={level:'L1',xp:0,done:{},srs:{},streak:{n:0,last:''},daily:{d:'',xp:0},hearts:{n:5,t:Date.now()},muted:false};
+try{const s=JSON.parse(localStorage.getItem('hanzi-duo')||'null');if(s)P=Object.assign(P,s)}catch(e){}
+function save(){try{localStorage.setItem('hanzi-duo',JSON.stringify(P))}catch(e){}}
+const REGEN=30*60*1000;
+function hearts(){const h=P.hearts;if(h.n<5){const g=Math.floor((Date.now()-h.t)/REGEN);if(g>0){h.n=Math.min(5,h.n+g);h.t=h.n>=5?Date.now():h.t+g*REGEN}}else h.t=Date.now();return h.n}
+function loseHeart(){if(P.pro)return;hearts();if(P.hearts.n>=5)P.hearts.t=Date.now();P.hearts.n=Math.max(0,P.hearts.n-1);save()}
+function dailyXp(){return P.daily.d===today()?P.daily.xp:0}
+function addXp(n){P.xp+=n;P.xplog=P.xplog||{};P.xplog[today()]=(P.xplog[today()]||0)+n;if(P.daily.d!==today())P.daily={d:today(),xp:0};P.daily.xp+=n;
+  const t=today();if(P.streak.last!==t){P.streak.n=P.streak.last===addDays(-1)?P.streak.n+1:1;P.streak.last=t}save()}
+function streakNow(){return(P.streak.last===today()||P.streak.last===addDays(-1))?P.streak.n:0}
+const IV=[0,1,3,7,14,30];
+function grade(ch,ok){const r=P.srs[ch]||{b:0,d:today()};r.b=ok?Math.min(5,r.b+1):0;r.d=ok?addDays(IV[r.b]):today();P.srs[ch]=r}
+const learned=()=>Object.keys(P.srs);
+const dueList=()=>learned().filter(c=>P.srs[c].d<=today());
+
+/* ---------- sound ---------- */
+let AC=null;
+function tone(seq){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const t0=AC.currentTime;
+  seq.forEach(([f,st,du,type])=>{const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(.0001,t0+st);g.gain.exponentialRampToValueAtTime(.18,t0+st+.02);g.gain.exponentialRampToValueAtTime(.0001,t0+st+du);o.connect(g).connect(AC.destination);o.start(t0+st);o.stop(t0+st+du+.05)})}catch(e){}}
+const sGood=()=>tone([[660,0,.12],[990,.1,.22]]), sBad=()=>tone([[200,0,.25,'square'],[150,.12,.3,'square']]), sWin=()=>tone([[523,0,.15],[659,.12,.15],[784,.24,.15],[1047,.36,.35]]);
+const BUF={},BIN={};let playTok=0;
+function actx(){AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
+function loadBin(lv){if(!BIN[lv])BIN[lv]=fetch('levels/'+lv+'-audio.mp3').then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).catch(e=>{delete BIN[lv];throw e});return BIN[lv]}
+function loadBuf(key){const [lv,i]=key.split('#');if(!BUF[key])BUF[key]=loadBin(lv).then(bin=>{const c=LD[lv].clips[+i];return bin.slice(c[0],c[0]+c[1])}).then(a=>new Promise((ok,no)=>actx().decodeAudioData(a,ok,no))).catch(e=>{delete BUF[s];throw e});return BUF[s]}
+function ttsSay(t){try{const u=new SpeechSynthesisUtterance(t);u.lang='zh-CN';u.rate=.8;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}}
+function hasZh(){return true}
+const URLS={};
+function clipURL(key){if(!URLS[key]){const [lv,i]=key.split('#');URLS[key]=loadBin(lv).then(bin=>{const c=LD[lv].clips[+i];return URL.createObjectURL(new Blob([bin.slice(c[0],c[0]+c[1])],{type:'audio/mpeg'}))}).catch(e=>{delete URLS[key];throw e})}return URLS[key]}
+let curAud=null;
+async function say(text){
+  text=String(text).replace(/[…，,\s]/g,'');
+  let seq=null;const K=a=>a.s.map(i=>a.lv+'#'+i);
+  if(text.length===1&&AUD.ch[text])seq=K(AUD.ch[text]);
+  else if(AUD.w[text])seq=K(AUD.w[text]);
+  else if(text.length>1&&[...text].every(c=>AUD.ch[c]))seq=[...text].flatMap(c=>K(AUD.ch[c]));
+  if(!seq||!seq.length){ttsSay(text);return}
+  const tok=++playTok;if(curAud){try{curAud.pause()}catch(e){}}
+  try{
+    const urls=await Promise.all(seq.map(clipURL));
+    for(const u of urls){if(tok!==playTok)return;
+      await new Promise(res=>{const a=new Audio(u);curAud=a;a.onended=res;a.onerror=res;const p=a.play();if(p&&p.catch)p.catch(res)});
+      if(urls.length>1)await new Promise(r=>setTimeout(r,40))}
+  }catch(e){ttsSay(text)}
+}
+/* ---------- writer ---------- */
+const GRID='<svg class="g" viewBox="0 0 260 260"><path d="M0 0L260 260M260 0L0 260M130 0V260M0 130H260" stroke="currentColor" stroke-dasharray="6 6" opacity=".22" fill="none"/></svg>';
+function writer(el,ch,size,opts){
+  [...el.querySelectorAll('svg:not(.g)')].forEach(e=>e.remove());
+  if(typeof HanziWriter==='undefined'||!S[ch])return null;
+  return HanziWriter.create(el,ch,Object.assign({width:size,height:size,padding:14,strokeColor:css('--ink'),radicalColor:css('--red'),
+    outlineColor:css('--line'),highlightColor:css('--sky'),drawingColor:css('--sky'),drawingWidth:6,strokeAnimationSpeed:1,delayBetweenStrokes:260,
+    charDataLoader:(c,ok)=>ok(S[c])},opts||{}));
+}
+function wsize(){return Math.min(260,(document.querySelector('.sbody .in')||document.body).clientWidth-32)}
+
+/* ---------- progress feedback ---------- */
+const MILES=[[10,'Анхны алхам'],[25,'Эхлэгч'],[50,'Идэвхтэй сурагч'],[75,'Хагас замд'],[100,'Тууштай'],[125,'Туршлагатай'],[150,'Бараг дууслаа'],[178,'HSK 1 ханзын эзэн']];
+function toast(msg,ms,icon){const el=$('toast');el.innerHTML=(icon||'')+'<span>'+esc(msg)+'</span>';el.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('on'),ms||1800)}
+function milesFor(lv){const N=lvMeta(lv).n;const f=[.05,.15,.3,.45,.6,.75,.9,1];return MILES.map((m,i)=>[i===7?N:Math.max(1,Math.round(N*f[i])),i===7?lvMeta(lv).name+' ханзын эзэн':m[1]])}
+function nextMile(n,lv){return milesFor(lv||CURLV).find(m=>m[0]>n)}
+function readable(set){const out=[];const seen=new Set();ALLG.forEach(x=>{const w=x.ew.replace(/[…，,\s]/g,'');if(w.length>1&&!seen.has(w)&&[...w].every(c=>set.has(c))){seen.add(w);out.push(x)}});return out}
+function renderHsk(){
+  const N=lvMeta(CURLV).n,n=lvLearned(CURLV),pct=Math.round(n/N*100),nm=nextMile(n),MI=milesFor(CURLV),nm2=lvMeta(CURLV).name;
+  $('lvSelT').textContent=lvMeta(CURLV).name;renderLvMenu();
+  const doneUnits=LESSONS.filter((l,ui)=>NODES.filter(x=>x.u===ui).every(x=>P.done[x.id])).length;
+  $('hskCard').innerHTML='<div class="top2"><div><div class="muted" style="font-size:13px">'+nm2+' ахиц</div><div><b style="font-size:18px">'+n+'</b> <span class="muted">/ '+N+' ханз · '+doneUnits+' / '+LESSONS.length+' бүлэг</span></div></div><div class="pct">'+pct+'%</div></div>'
+    +'<div class="pbar"><i style="width:'+pct+'%"></i></div>'
+    +'<div class="ticks">'+MI.filter((m,i)=>i!==6).map(m=>'<span class="'+(n>=m[0]?'got':'')+'" style="left:'+Math.min(97,Math.max(3,m[0]/N*100))+'%">'+m[0]+'</span>').join('')+'</div>'
+    +(nm?'<div class="next">'+IC.flag+'<span>Дараагийн шат: <b>'+nm[1]+'</b> · '+(nm[0]-n)+' ханз үлдлээ</span></div>':'<div class="next">'+IC.trophy+'<span><b>'+nm2+'-ийн бүх ханзыг сурлаа!</b></span></div>')
+    +(n?'<div class="muted" style="font-size:13px">Одоо уншиж чадах үг: '+readable(new Set(learned())).length+'</div>':'');
+}
+/* ---------- path screen ---------- */
+function show(id){['s-path','s-basics','s-sess','s-pro','s-me'].forEach(s=>$(s).hidden=s!==id);{const nv=$('bnav');if(nv){nv.hidden=!['s-path','s-pro','s-me'].includes(id);nv.querySelectorAll('button').forEach(b=>b.classList.toggle('on',('s-'+b.dataset.go)===id))}}if(typeof snow==='function')snow()}
+function curNode(){const i=NODES.findIndex(n=>!P.done[n.id]);return i<0?NODES.length:i}
+function renderPath(){
+  show('s-path');
+  $('tStreak').textContent=streakNow();$('tXp').textContent=P.xp;$('tHearts').textContent=P.pro?'∞':hearts();renderToday();
+  const dx=dailyXp();$('gTxt').innerHTML=Math.min(dx,20)+' / 20 XP'+(dx>=20?' <span style="color:var(--jade)">'+IC.check+'</span>':'');$('gBar').style.width=Math.min(100,dx/20*100)+'%';
+  renderHsk();
+  const cur=curNode();const p=$('path');p.innerHTML='';
+  const OFF=[0,44,70,44,0,-44,-70,-44];let k=0;
+  LESSONS.forEach((l,ui)=>{
+    const [c,cd]=COLORS[ui%COLORS.length];
+    const u=document.createElement('div');u.className='unit';u.style.background=c;
+    const un=NODES.filter(n=>n.u===ui),ud=un.filter(n=>P.done[n.id]).length;
+    u.innerHTML='<div><small>'+(ui+1)+'-р бүлэг</small><b>'+esc(l.t)+'</b><span class="cnt">'+(ud===un.length?'Дууссан':ud+' / '+un.length+' хичээл')+'</span></div><div class="cs">'+esc(l.c.map(x=>x[0]).join(''))+'</div>';
+    p.appendChild(u);
+    const path=document.createElement('div');path.className='path';
+    NODES.filter(n=>n.u===ui).forEach(n=>{
+      const b=document.createElement('button');b.type='button';
+      const st=P.done[n.id]?'done':n.i===cur?'cur':n.i<cur?'done':'lock';
+      b.className='node '+(st==='lock'?'lock':st==='done'?'done':'cur');
+      if(st!=='lock'&&st!=='done'){b.style.setProperty('--nc',c);b.style.setProperty('--nd',cd)}
+      b.style.transform='translateX('+OFF[k++%OFF.length]+'px)';
+      if(n.type==='review')b.innerHTML=IC.star;else b.textContent=n.chars[0];
+      b.setAttribute('aria-label',(n.type==='review'?'Бүлгийн давтлага':'Хичээл: '+n.chars.join(' '))+(st==='lock'?' (түгжээтэй)':''));
+      if(st==='cur'){b.insertAdjacentHTML('afterbegin','<span class="ring"></span><span class="bubble">ЭХЛЭХ</span>');}
+      b.onclick=()=>{if(st==='lock'){b.animate([{transform:b.style.transform+' translateX(-4px)'},{transform:b.style.transform+' translateX(4px)'},{transform:b.style.transform}],{duration:220});return}startNode(n)};
+      const w=document.createElement('div');w.style.transform=b.style.transform;b.style.transform='';w.appendChild(b);path.appendChild(w);
+    });
+    p.appendChild(path);
+  });
+  const c=p.querySelector('.node.cur');if(c&&!renderPath.scrolled){renderPath.scrolled=1;setTimeout(()=>c.scrollIntoView({block:'center'}),50)}
+}
+$('pracBtn').onclick=()=>startPractice();
+$('toBasics').onclick=()=>{location.hash='basics'};
+
+/* ---------- basics ---------- */
+const BASIC=[['横','héng','Хэвтээ','Зүүнээс баруун','一',0],['竖','shù','Босоо','Дээрээс доош','十',1],['撇','piě','Зүүн налуу','Баруун дээрээс зүүн доош','人',0],['捺','nà','Баруун налуу','Зүүн дээрээс баруун доош','人',1],
+ ['点','diǎn','Цэг','Богино, баруун доош','六',0],['提','tí','Сөрөх','Зүүн доороос баруун дээш','我',3],['折','zhé','Нугалаа','Хэвтээгээр яваад доош','口',1],['钩','gōu','Дэгээ','Төгсгөлдөө дэгээтэй','小',0]];
+const RULES=[['先横后竖','Эхлээд хэвтээ, дараа нь босоо','十'],['先撇后捺','Эхлээд зүүн налуу, дараа нь баруун','八'],['从上到下','Дээрээс доош','三'],['从左到右','Зүүнээс баруун','明'],
+ ['从外到内','Гаднаас дотогш','同'],['先里头后封口','Дотрыг нь бичээд, хаалгаа сүүлд хаа','国'],['先中间后两边','Эхлээд голыг, дараа нь хоёр талыг','小']];
+const HZC={};const hzG=t=>[...String(t)].map(c=>{if(!S[c])return esc(c);if(!HZC[c])HZC[c]='<svg class="hzg" viewBox="0 0 1024 1024" role="img" aria-label="'+c+'"><g transform="translate(0,900) scale(1,-1)">'+S[c].strokes.map(p=>'<path d="'+p+'"/>').join('')+'</g></svg>';return HZC[c]}).join('');
+const HZRE=/[㐀-鿿豈-﫿]/;
+function hzWalk(root){const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>{if(!HZRE.test(n.nodeValue))return 2;const p=n.parentElement;if(!p||p.closest('script,style,svg,textarea,input,title,.nohz'))return 2;return 1}});const L=[];while(tw.nextNode())L.push(tw.currentNode);
+  for(const n of L){const v=n.nodeValue;if(![...v].some(c=>S[c]))continue;const sp=document.createElement('span');sp.className='hzw';sp.innerHTML=[...v].map(c=>S[c]?hzG(c):esc(c)).join('');n.replaceWith(...sp.childNodes)}}
+let hzQ=0;new MutationObserver(()=>{if(hzQ)return;hzQ=1;queueMicrotask(()=>{hzQ=0;hzWalk(document.body)})}).observe(document.body,{childList:true,subtree:true,characterData:true});
+const svgOf=(ch,hi)=>'<svg viewBox="0 0 1024 1024" aria-hidden="true"><g transform="translate(0,900) scale(1,-1)">'+S[ch].strokes.map((p,i)=>'<path d="'+p+'" fill="'+(i===hi?'var(--red)':'var(--line)')+'"/>').join('')+'</g></svg>';
+let bBuilt=false,rW=[];
+function renderBasics(){
+  show('s-basics');window.scrollTo(0,0);
+  if(!bBuilt){bBuilt=true;
+    $('bStrokes').innerHTML=BASIC.map(b=>'<div class="sk">'+svgOf(b[4],b[5])+'<span>'+b[2]+'</span><span class="hz">'+b[0]+' '+b[1]+'</span><span class="muted" style="font-size:13px">'+b[3]+'</span></div>').join('');
+    RULES.forEach((x,i)=>{const d=document.createElement('div');d.className='rule';
+      d.innerHTML='<div class="rbox" role="button" tabindex="0" aria-label="Дахин харуулах"></div><div><div>'+(i+1)+'. '+x[1]+'</div><div class="zh">'+x[0]+'</div><div class="muted" style="font-size:13px">Жишээ: '+x[2]+'</div></div>';
+      $('bRules').appendChild(d);const bx=d.querySelector('.rbox');const w=writer(bx,x[2],100,{padding:8,showCharacter:false,delayBetweenStrokes:420});rW.push(w);
+      bx.onclick=()=>w&&w.animateCharacter();bx.onkeydown=e=>{if(e.key==='Enter'){w&&w.animateCharacter()}}})}
+  rW.forEach((w,i)=>w&&setTimeout(()=>w.animateCharacter(),i*250));
+}
+$('basicsBack').onclick=()=>{location.hash=''};
+$('basicsGo').onclick=()=>{location.hash='';setTimeout(()=>{const n=NODES[curNode()];n&&startNode(n)},30)};
+
+/* ---------- exercise builders ---------- */
+function pickOthers(t,key,n,pool){const seen=new Set([t[key]]),out=[];for(const x of shuffle(pool)){if(out.length>=n)break;if(x.ch===t.ch||seen.has(x[key])||x.mn===t.mn)continue;seen.add(x[key]);out.push(x)}return out}
+function poolFor(chars){const u=new Set(chars);const near=ALL.filter(x=>P.srs[x.ch]||u.has(x.ch));return near.length>=8?near:ALL.slice(0,Math.max(16,near.length))}
+function exMC(t,kind,pool){return{type:'mc',kind,t,pool,graded:true}}
+function exWrite(t){return{type:'write',t,graded:true}}
+function exTrace(t){return{type:'trace',t}}
+function exIntro(t){return{type:'intro',t}}
+function exMatch(ts){return{type:'match',ts}}
+function buildLearn(node){
+  const ts=node.chars.map(c=>CH[c]);const pool=poolFor(node.chars);const q=[];
+  ts.forEach(t=>{q.push(exIntro(t));q.push(exTrace(t));q.push(exMC(t,'meaning',pool))});
+  const late=[];ts.forEach(t=>{late.push(exMC(t,Math.random()<.5?'char':'listen',pool));late.push(exWrite(t))});
+  q.push(exMatch(ts));return q.concat(shuffle(late));
+}
+function buildReview(chars,n){
+  const ts=shuffle(chars.map(c=>CH[c])).slice(0,n);const pool=poolFor(chars);const kinds=['meaning','char','listen','pinyin'];
+  const q=ts.map((t,i)=>i%3===2?exWrite(t):exMC(t,kinds[i%4],pool));
+  if(ts.length>=4)q.splice(Math.min(4,q.length),0,exMatch(shuffle(ts).slice(0,4)));
+  return q;
+}
+
+/* ---------- session engine ---------- */
+let SS=null;
+function startNode(node){
+  if(hearts()<=0)return noHearts();
+  SS={before:lvLearned(CURLV),bset:new Set(learned()),combo:0,node,mode:node.type,queue:node.type==='learn'?buildLearn(node):buildReview(node.chars,10),i:0,mistakes:0,graded:0,correct:0,t0:Date.now(),requeued:new Set()};
+  SS.total=SS.queue.length;openSession();
+}
+function startPractice(){
+  const L=learned();
+  if(!L.length){alertBox('Давтах ханз алга байна','Эхлээд нэг хичээл дуусгаарай.');return}
+  const due=dueList();const rest=shuffle(L.filter(c=>!due.includes(c))).sort((a,b)=>P.srs[a].b-P.srs[b].b);
+  SS={before:lvLearned(CURLV),bset:new Set(learned()),combo:0,node:null,mode:'practice',queue:buildReview(shuffle(due).concat(rest).slice(0,8),8),i:0,mistakes:0,graded:0,correct:0,t0:Date.now(),requeued:new Set()};
+  SS.total=SS.queue.length;openSession();
+}
+function openSession(){show('s-sess');renderEx()}
+$('quit').onclick=()=>{if(QZ){clearInterval(qzTick.h);QZ=null;location.hash='pro';renderPro();return}SS=null;location.hash='';renderPath()};
+function setFoot(state,html,label,enabled){
+  const f=$('sFoot');f.className='sfoot'+(state?' '+state:'');$('fb').innerHTML=html||'';
+  const a=$('act');a.textContent=label;a.disabled=!enabled;a.className='btn '+(state==='bad'?'red':'go');
+}
+function progress(){$('sBar').style.width=Math.min(100,SS.i/SS.total*100)+'%';$('sHearts').innerHTML=SS.mode==='practice'?IC.infinity:IC.heart+' '+hearts();}
+let onAct=null;
+$('act').onclick=()=>onAct&&onAct();
+document.addEventListener('keydown',e=>{if($('s-sess').hidden)return;
+  if(e.key==='Enter'&&!$('act').disabled){e.preventDefault();$('act').click()}
+  const n=+e.key;if(n>=1&&n<=4){const o=document.querySelectorAll('#sBody .opts .opt')[n-1];o&&o.click()}});
+function infoLine(t){return '<b>'+hzG(t.ch)+'</b> · '+esc(t.py)+' · '+esc(t.mn)}
+function next(){SS.i++;renderEx()}
+
+
+/* ---------- New Year theme ---------- */
+function nyOn(){try{return localStorage.getItem('hanzi-ny')!=='off'}catch(e){return true}}
+const SNOWIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M3.3 7l17.4 10M3.3 17 20.7 7M12 2 9.5 4.5M12 2l2.5 2.5M12 22l-2.5-2.5M12 22l2.5-2.5"/></svg>';
+function lightsSVG(){const n=16,c=['#ff5a4e','#ffd166','#4cc9f0','#7ae582','#f78cff'];let w='',b='';
+  for(let i=0;i<n;i++){const x=(i+.5)/n*1000,y=6+Math.sin((i+.5)/n*Math.PI*8)*-4+5;b+='<g class="b" style="color:'+c[i%5]+'"><rect x="'+(x-2.5)+'" y="'+(y-3)+'" width="5" height="4" rx="1" fill="#2d3b33"/><ellipse cx="'+x+'" cy="'+(y+5)+'" rx="4.5" ry="6.5" fill="currentColor"/></g>'}
+  for(let i=0;i<=200;i++){const x=i/200*1000,y=Math.sin(i/200*Math.PI*8)*-4+5;w+=(i?'L':'M')+x.toFixed(1)+' '+y.toFixed(1)}
+  return '<svg viewBox="0 0 1000 22" preserveAspectRatio="none"><path d="'+w+'" stroke="#2d3b33" stroke-width="1.5" fill="none" vector-effect="non-scaling-stroke"/>'+b+'</svg>'}
+const TREE='<svg class="tree" viewBox="0 0 52 60"><path d="M26 4l-11 15h6L12 32h7L8 46h36L33 32h7l-9-13h6z" fill="#1f7a55" stroke="#0f3d2e" stroke-width="1.5" stroke-linejoin="round"/><rect x="22" y="46" width="8" height="8" rx="1" fill="#7a4a2a"/><path d="M26 0l1.6 3.4 3.7.4-2.8 2.5.8 3.7L26 8.2l-3.3 1.8.8-3.7-2.8-2.5 3.7-.4z" fill="#ffd166"/><circle cx="20" cy="27" r="2.3" fill="#ff5a4e"/><circle cx="31" cy="23" r="2" fill="#4cc9f0"/><circle cx="17" cy="40" r="2.3" fill="#ffd166"/><circle cx="34" cy="38" r="2.3" fill="#f78cff"/><circle cx="27" cy="33" r="2" fill="#7ae582"/></svg>';
+function nyCard(){const now=new Date(),y=now.getMonth()===0&&now.getDate()<=15?now.getFullYear():now.getFullYear()+1;const ny=new Date(y,0,1);const d=Math.ceil((ny-now)/864e5);
+  const el=$('nyCard');if(!el)return;if(!nyOn()){el.hidden=true;return}el.hidden=false;
+  el.innerHTML=TREE+(d>0?'<div><b>Шинэ жилийн сорилт</b><span>Шинэ жил хүртэл өдөр бүр хичээлээ хий!</span></div><div class="num">'+d+'<small>ӨДӨР</small></div>':'<div><b>Шинэ жилийн мэнд!</b><span>新年快乐 · Шинэ ондоо шинэ ханз сураарай</span></div>')}
+let snowRAF=0;
+function snow(){const cv=$('snow');if(!cv)return;const on=nyOn()&&!RM&&!document.hidden&&!$('s-path').hidden;cancelAnimationFrame(snowRAF);if(!on){cv.getContext('2d').clearRect(0,0,cv.width,cv.height);return}
+  const dpr=Math.min(2,devicePixelRatio||1),ctx=cv.getContext('2d');const fit=()=>{cv.width=innerWidth*dpr;cv.height=innerHeight*dpr};fit();
+  if(!snow.f){snow.f=Array.from({length:Math.min(22,Math.round(innerWidth/22))},()=>({x:Math.random(),y:Math.random(),r:1+Math.random()*1.8,s:.08+Math.random()*.22,p:Math.random()*6}));addEventListener('resize',()=>{if(!$('s-path').hidden)fit()})}
+  const dark=matchMedia('(prefers-color-scheme: dark)').matches||document.documentElement.dataset.theme==='dark';
+  let last=performance.now();
+  const tick=t=>{const dt=Math.min(50,t-last)/16;last=t;ctx.clearRect(0,0,cv.width,cv.height);ctx.fillStyle=dark?'rgba(255,255,255,.45)':'rgba(150,185,225,.5)';
+    for(const f of snow.f){f.y+=f.s*dt/innerHeight*3;f.p+=.02*dt;if(f.y>1.02){f.y=-.02;f.x=Math.random()}
+      ctx.beginPath();ctx.arc((f.x*innerWidth+Math.sin(f.p)*12)*dpr,f.y*innerHeight*dpr,f.r*dpr,0,7);ctx.fill()}
+    snowRAF=requestAnimationFrame(tick)};snowRAF=requestAnimationFrame(tick)}
+function nyApply(){document.body.classList.toggle('ny',nyOn());nyCard();snow();const b=$('nySw');if(b){b.style.opacity=nyOn()?1:.5;b.title=nyOn()?'Шинэ жилийн чимэглэл: асаалттай':'Шинэ жилийн чимэглэл: унтраалттай'}}
+document.addEventListener('visibilitychange',snow);
+
+/* ---------- level dropdown ---------- */
+function pickLevel(id){const L=lvMeta(id);closeLvMenu();if(!L.ready)return;if(PRO_LEVELS.includes(L.id)&&!P.pro){location.hash='pro';return}if(L.id===CURLV)return;
+  if(!LD[L.id])toast(L.name+' ачаалж байна…',4000);loadLevel(L.id).then(()=>{$('toast').classList.remove('on');setLevel(L.id);renderPath.scrolled=0;renderPath();scrollTo(0,0)}).catch(()=>toast('Ачаалж чадсангүй. Дахин оролдоно уу.'))}
+function renderLvMenu(){$('lvMenu').innerHTML=LEVELS.map(l=>{const lock=PRO_LEVELS.includes(l.id)&&!P.pro,got=LD[l.id]?lvLearned(l.id):0,pct=Math.round(got/l.n*100);
+  return '<button type="button" role="option" aria-selected="'+(l.id===CURLV)+'" class="'+(l.id===CURLV?'on ':'')+(l.ready?'':'soon')+'" data-lv="'+l.id+'"><span class="n">'+l.name+'</span>'+(lock?'<span><span class="pro">PRO</span></span>':'<span class="pb"><i style="width:'+pct+'%"></i></span>')+'<span class="c">'+(LD[l.id]?got+' / '+l.n:l.n+' ханз')+'</span></button>'}).join('');
+  $('lvMenu').querySelectorAll('button').forEach(b=>b.onclick=e=>{e.stopPropagation();pickLevel(b.dataset.lv)})}
+function closeLvMenu(){$('lvMenu').hidden=true;$('lvSel').setAttribute('aria-expanded','false')}
+$('lvSel').onclick=e=>{e.stopPropagation();const open=$('lvMenu').hidden;if(open){renderLvMenu();$('lvMenu').hidden=false;$('lvSel').setAttribute('aria-expanded','true');const on=$('lvMenu').querySelector('.on');if(on)on.focus()}else closeLvMenu()};
+document.addEventListener('click',e=>{if(!$('lvMenu').hidden&&!e.target.closest('#lvMenu'))closeLvMenu()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('lvMenu').hidden){closeLvMenu();$('lvSel').focus()}});
+
+/* ---------- me screen + bottom nav ---------- */
+function renderMe(){show('s-me');scrollTo(0,0);
+  const L=learned(),days=[];for(let k=6;k>=0;k--)days.push(addDays(-k));const xl=P.xplog||{};
+  if(!xl[today()]&&P.daily&&P.daily.d===today()&&P.daily.xp){xl[today()]=P.daily.xp}
+  const mx=Math.max(20,...days.map(d=>xl[d]||0));const wd=['Ня','Да','Мя','Лх','Пү','Ба','Бя'];
+  const wsum=days.reduce((a,d)=>a+(xl[d]||0),0);
+  const due=L.filter(c=>P.srs[c]&&P.srs[c].d<=today()).length;
+  let h='<div class="mtiles"><div class="mtile">'+IC.flame+'<div><b>'+streakNow()+'</b><span>өдөр дараалан</span></div></div><div class="mtile">'+IC.bolt+'<div><b>'+P.xp+'</b><span>нийт XP</span></div></div><div class="mtile">'+IC.medal+'<div><b>'+L.length+'</b><span>сурсан ханз</span></div></div><div class="mtile">'+IC.dumbbell.replace('class="ic"','class="ic" style="color:var(--sky)"')+'<div><b>'+due+'</b><span>өнөөдөр давтах</span></div></div></div>';
+  h+='<div class="mcard"><h2>Сүүлийн 7 хоног · '+wsum+' XP</h2><div class="wbars">'+days.map(d=>{const v=xl[d]||0;const dt=new Date(d+'T00:00');return '<div class="'+(d===today()?'t':'')+'"><em>'+(v||'')+'</em><i style="height:'+Math.round(v/mx*80+4)+'px"></i><small>'+(d===today()?'Өнөө':wd[dt.getDay()])+'</small></div>'}).join('')+'</div></div>';
+  h+='<div class="mcard"><h2>Түвшин бүрийн ахиц</h2>'+LEVELS.map(l=>{const got=L.filter(c=>{const o=CH[c];return o&&o.lv===l.id}).length;return '<div class="lvrow"><b>'+l.name+'</b><span class="pb"><i style="width:'+Math.round(got/l.n*100)+'%"></i></span><span class="c">'+got+' / '+l.n+'</span></div>'}).join('')+'</div>';
+  const sorted=L.slice().sort((a,b)=>(P.srs[b].b||0)-(P.srs[a].b||0));
+  h+='<div class="mcard"><h2>Сурсан ханзууд'+(L.length?' · '+L.length:'')+'</h2>'+(L.length?'<p class="muted" style="margin:-4px 0 10px;font-size:13px">Дарж сонсоорой. Доорх зураас нь хэр бат цээжилснийг харуулна.</p><div class="chgrid">'+sorted.slice(0,300).map(c=>'<button type="button" data-ch="'+c+'" title="'+esc((CH[c]||{}).mn||'')+'">'+c+'<i><b style="width:'+Math.round(Math.min(5,P.srs[c].b||0)/5*100)+'%"></b></i></button>').join('')+'</div>'+(L.length>300?'<p class="muted" style="font-size:13px">…болон өөр '+(L.length-300)+'</p>':''):'<p class="muted" style="margin:0">Эхний хичээлээ хийгээд энд ханзууд чинь гарч ирнэ.</p>')+'</div>';
+  const th=document.documentElement.dataset.theme||'auto';
+  h+='<div class="mcard"><h2>Тохиргоо</h2><div class="setrow"><span>Өнгө</span><span class="seg" id="thSeg">'+[['auto','Авто'],['light','Цайвар'],['dark','Бараан']].map(([k,t])=>'<button type="button" data-th="'+k+'" class="'+(th===k?'on':'')+'">'+t+'</button>').join('')+'</span></div><div class="setrow"><span>Шинэ жилийн чимэглэл</span><span class="seg" id="nySeg"><button type="button" data-v="on" class="'+(nyOn()?'on':'')+'">Асаах</button><button type="button" data-v="off" class="'+(nyOn()?'':'on')+'">Унтраах</button></span></div><div class="setrow"><span>Ахицаа арилгах</span><button type="button" class="btn" id="rstBtn" style="padding:6px 12px;font-size:12px">Арилгах</button></div></div>';
+  $('meBody').innerHTML=h;
+  $('meBody').querySelectorAll('.chgrid button').forEach(b=>b.onclick=()=>{say(b.dataset.ch);const o=CH[b.dataset.ch];if(o)toast(o.py+' · '+o.mn,2200)});
+  $('thSeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{const v=b.dataset.th;if(v==='auto')delete document.documentElement.dataset.theme;else document.documentElement.dataset.theme=v;try{localStorage.setItem('hanzi-theme',v)}catch(e){}renderMe()});
+  $('nySeg').querySelectorAll('button').forEach(b=>b.onclick=()=>{try{localStorage.setItem('hanzi-ny',b.dataset.v)}catch(e){}nyApply();renderMe()});
+  $('rstBtn').onclick=()=>{const b=$('rstBtn');if(!b.dataset.sure){b.dataset.sure=1;b.textContent='Итгэлтэй юу? Дахин дар';b.classList.add('red');setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='Арилгах';b.classList.remove('red')}},4000);return}
+    try{localStorage.removeItem('hanzi-duo')}catch(e){}location.hash='';location.reload()};
+}
+try{const t=localStorage.getItem('hanzi-theme');if(t&&t!=='auto')document.documentElement.dataset.theme=t}catch(e){}
+/* ---------- celebrate ---------- */
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+function fxLayer(){const d=document.createElement('div');d.className='fx';document.body.appendChild(d);return d}
+function fxOrigin(){const el=document.querySelector('#sBody .opt.good,#sBody .opt.sel,#sBody .wbox,#sBody .prompt,#sBody .title');const r=el?el.getBoundingClientRect():{left:innerWidth/2-50,top:innerHeight/3,width:100,height:40};return [r.left+r.width/2,r.top+r.height/2,el]}
+function confetti(L,x,y,n,power){
+  const cols=['#e2483d','#1fa577','#f2b632','#2f8fd8','#9b5de5','#ff8fab'];
+  for(let k=0;k<n;k++){const i=document.createElement('i');const sz=6+Math.random()*7,sh=Math.random();
+    i.style.cssText='left:'+x+'px;top:'+y+'px;width:'+sz+'px;height:'+(sh<.4?sz:sz*.45)+'px;background:'+cols[k%cols.length]+';border-radius:'+(sh<.25?'50%':'2px');
+    if(sh>.85){i.style.background='none';i.innerHTML='<svg viewBox="0 0 24 24" width="'+(sz*2)+'" height="'+(sz*2)+'"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="'+cols[k%cols.length]+'"/></svg>'}
+    L.appendChild(i);const a=Math.random()*Math.PI*2,v=(90+Math.random()*170)*power,dx=Math.cos(a)*v,dy=Math.sin(a)*v-120*power,rot=(Math.random()-.5)*900;
+    i.animate([{transform:'translate(-50%,-50%) scale(.3)',opacity:1},{transform:'translate(calc(-50% + '+dx*.7+'px),calc(-50% + '+dy*.7+'px)) rotate('+rot*.6+'deg) scale(1)',opacity:1,offset:.45},{transform:'translate(calc(-50% + '+dx+'px),calc(-50% + '+(dy+260)+'px)) rotate('+rot+'deg) scale(.9)',opacity:0}],{duration:1000+Math.random()*500,easing:'cubic-bezier(.15,.7,.4,1)',fill:'forwards'})}
+}
+function celebrate(combo){
+  const bar=$('sBar');bar.classList.remove('shine');void bar.offsetWidth;bar.classList.add('shine');
+  const [x,y,el]=fxOrigin();if(el&&el.classList.contains('opt')){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop')}
+  if(RM)return;const L=fxLayer();
+  const big=combo>=5,power=big?1.35:combo>=3?1.1:.85;
+  confetti(L,x,y,big?46:combo>=3?32:22,power);
+  const p=document.createElement('div');p.className='plus';p.textContent=combo>=2?'+1  ×'+combo:'+1';p.style.left=x+'px';p.style.top=y+'px';L.appendChild(p);
+  p.animate([{transform:'translate(-50%,-30%) scale(.5)',opacity:0},{transform:'translate(-50%,-110%) scale(1.15)',opacity:1,offset:.3},{transform:'translate(-50%,-220%) scale(1)',opacity:0}],{duration:1100,easing:'ease-out',fill:'forwards'});
+  if(combo>=3){const c=document.createElement('div');c.className='combo';c.innerHTML='×'+combo+'<small>ДАРААЛАН ЗӨВ</small>';L.appendChild(c);
+    c.animate([{transform:'translate(-50%,-50%) scale(.2) rotate(-12deg)',opacity:0},{transform:'translate(-50%,-50%) scale(1.25) rotate(4deg)',opacity:1,offset:.25},{transform:'translate(-50%,-50%) scale(1) rotate(0)',opacity:1,offset:.6},{transform:'translate(-50%,-80%) scale(.9)',opacity:0}],{duration:1300,easing:'ease-out',fill:'forwards'});
+    const g=document.createElement('div');g.className='glow';L.appendChild(g);g.animate([{boxShadow:'inset 0 0 0 0 rgba(242,182,50,0)'},{boxShadow:'inset 0 0 60px 14px rgba(242,182,50,.55)'},{boxShadow:'inset 0 0 0 0 rgba(242,182,50,0)'}],{duration:900})}
+  if(combo>=3&&navigator.vibrate)try{navigator.vibrate(18)}catch(e){}
+  setTimeout(()=>L.remove(),1700);
+}
+function oops(){const el=document.querySelector('#sBody .opt.bad,#sBody .opt.sel,#sBody .wbox');if(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}if(navigator.vibrate)try{navigator.vibrate([30,40,30])}catch(e){}}
+const OKMARK='<span class="okmark"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>';
+function result(ok,ex,extra){
+  if(ex.graded||ex.type==='trace')stat(ex.type==='mc'?(ex.kind==='listen'&&!hasZh()?'pinyin':ex.kind):ex.type,ok);
+  if(ex.graded){SS.graded++;if(ok)SS.correct++;else{SS.mistakes++;if(SS.mode!=='practice'&&!(SS.mode==='learn'&&ex.type==='write'))loseHeart();
+    if(!SS.requeued.has(ex)){SS.requeued.add(ex);const copy=Object.assign({},ex,{re:1,opts:null});SS.queue.push(copy);SS.total++}}
+    if(SS.mode==='practice'||SS.mode==='review')grade(ex.t.ch,ok);save()}
+  ok?sGood():sBad();progress();
+  {const cb=ex.graded?(ok?(SS.combo||0)+1:0):(ok?1:0);setTimeout(()=>ok?celebrate(cb):oops(),20)}
+  if(ex.graded){SS.combo=ok?SS.combo+1:0;const cm={3:[IC.flame,'3 дараалан зөв!'],5:[IC.bolt,'5 дараалан! Гайхалтай'],8:[IC.sparkle,'8 дараалан! Зогсоох аргагүй'],12:[IC.crown,'12 дараалан!']}[SS.combo];if(cm&&RM)toast(cm[1],0,cm[0])}
+  const half=Math.floor(SS.total/2);if(SS.i===half&&!SS.halfShown&&SS.total>6){SS.halfShown=1;setTimeout(()=>toast('Хагаст нь хүрлээ, үргэлжлүүл!',0,IC.flag),300)}
+  const t=ex.t;
+  setFoot(ok?'good':'bad',(ok?OKMARK:'')+'<div><span class="h">'+(ok?['Зөв байна!','Гайхалтай!','Яг зөв!','Сайн байна!'][Math.random()*4|0]:'Буруу байна')+'</span><span class="s">'+(extra||(t?(ok?'':'Зөв хариулт: ')+infoLine(t):''))+'</span></div>','Үргэлжлүүлэх',true);
+  onAct=()=>{if(SS.mode!=='practice'&&hearts()<=0)return noHearts(true);next()};
+  $('act').focus();
+}
+function renderEx(){
+  progress();const body=$('sBody');body.innerHTML='';
+  if(SS.i>=SS.queue.length)return finish();
+  const ex=SS.queue[SS.i];onAct=null;
+  setFoot('','', 'Шалгах',false);
+  if(ex.type==='intro')return rIntro(body,ex);
+  if(ex.type==='trace')return rTrace(body,ex);
+  if(ex.type==='write')return rWrite(body,ex);
+  if(ex.type==='match')return rMatch(body,ex);
+  return rMC(body,ex);
+}
+function rIntro(body,ex){
+  const t=ex.t;
+  body.innerHTML='<div class="newtag">Шинэ ханз</div><div class="card"><div class="wbox" id="wb">'+GRID+'</div><div class="meta"><div class="py">'+esc(t.py)+'</div><div class="mn">'+esc(t.mn)+'</div><div class="muted">'+(S[t.ch]?S[t.ch].strokes.length+' зурлага':'')+'</div><div class="ex">Жишээ: <b>'+hzG(t.ew)+'</b> '+esc(t.ep)+' · '+esc(t.em)+'</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><button class="spk" type="button" id="p1">'+IC.speaker+' '+hzG(t.ch)+'</button><button class="spk" type="button" id="p2">'+IC.speaker+' '+hzG(t.ew.replace('…',''))+'</button><button class="spk" type="button" id="p3">'+IC.replay+' Дахин</button></div></div></div>';
+  const sz=wsize();const wb=$('wb');wb.style.width=wb.style.height=sz+'px';
+  const w=writer(wb,t.ch,sz,{showCharacter:false});w&&w.animateCharacter();
+  $('p1').onclick=()=>say(t.ch);$('p2').onclick=()=>say(t.ew.replace('…',''));$('p3').onclick=()=>w&&w.animateCharacter();
+  say(t.ch);
+  setFoot('','<span class="s muted">Зурлагын дарааллыг ажигла</span>','Үргэлжлүүлэх',true);onAct=next;
+}
+function rTrace(body,ex){
+  const t=ex.t;
+  body.innerHTML='<div class="title">Дагаж бич</div><div class="muted">'+infoLine(t)+'</div><div class="wbox" id="wb">'+GRID+'</div><div class="skipline"><button type="button" id="skip">Одоо бичих боломжгүй</button></div>';
+  const sz=wsize();const wb=$('wb');wb.style.width=wb.style.height=sz+'px';
+  const w=writer(wb,t.ch,sz,{showCharacter:false,showOutline:true});
+  w&&w.quiz({showHintAfterMisses:2,onComplete:()=>{result(true,ex,'Зурлагын дараалал зөв. '+infoLine(t))}});
+  $('skip').onclick=()=>{w&&w.cancelQuiz();next()};
+}
+function rWrite(body,ex){
+  const t=ex.t;let done=false;
+  body.innerHTML='<div class="title">Цээжээр бич</div><div class="prompt"><span class="t">'+esc(t.mn)+'</span><span class="muted" style="font-size:20px">'+esc(t.py)+'</span></div><div class="wbox" id="wb">'+GRID+'</div><div class="skipline"><button type="button" id="idk">Мэдэхгүй байна</button></div>';
+  const sz=wsize();const wb=$('wb');wb.style.width=wb.style.height=sz+'px';
+  const w=writer(wb,t.ch,sz,{showCharacter:false,showOutline:false});
+  w&&w.quiz({showHintAfterMisses:3,onComplete:s=>{if(done)return;done=true;const ok=s.totalMistakes<=2;result(ok,ex,ok?infoLine(t):'Алдаа олон байна ('+s.totalMistakes+'). '+infoLine(t))}});
+  $('idk').onclick=()=>{if(done)return;done=true;w&&w.cancelQuiz();w&&w.animateCharacter();result(false,ex)};
+}
+function rMC(body,ex){
+  const t=ex.t;let kind=ex.kind;if(kind==='listen'&&!hasZh())kind='pinyin';
+  const key=kind==='meaning'?'mn':kind==='pinyin'?'py':'ch';
+  const others=pickOthers(t,key==='ch'?'ch':key,3,ex.pool);
+  const opts=ex.opts||(ex.opts=shuffle([t,...others]));
+  const hzOpt=kind==='char'||kind==='listen';
+  let head='';
+  if(kind==='meaning')head='<div class="title">Энэ ханз ямар утгатай вэ?</div><div class="prompt"><span class="hz">'+hzG(t.ch)+'</span><button class="spk" type="button" id="sp">'+IC.speaker+'</button></div>';
+  if(kind==='pinyin')head='<div class="title">Яаж дууддаг вэ?</div><div class="prompt"><span class="hz">'+hzG(t.ch)+'</span><span class="muted">'+esc(t.mn)+'</span></div>';
+  if(kind==='char')head='<div class="title">«'+esc(t.mn)+'» гэсэн ханзыг сонго</div>';
+  if(kind==='listen')head='<div class="title">Сонсоод зөв ханзыг сонго</div><div class="prompt"><button class="btn sky bigspk" type="button" id="sp">'+IC.speaker+'</button></div>';
+  body.innerHTML=head+'<div class="opts"></div>';
+  const sp=$('sp');if(sp){sp.onclick=()=>say(t.ch);if(kind==='listen')setTimeout(()=>say(t.ch),250)}
+  const box=body.querySelector('.opts');let sel=null;
+  opts.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='opt'+(hzOpt?' hz':'');
+    b.innerHTML='<span class="k">'+(i+1)+'</span>'+(key==='mn'?esc(o.mn):key==='py'?esc(o.py):hzG(o.ch));
+    b.onclick=()=>{if(box.dataset.done)return;[...box.children].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=o;if(hzOpt)say(o.ch);setFoot('','','Шалгах',true);
+      onAct=()=>{box.dataset.done=1;const ok=sel===t;[...box.children].forEach((x,k)=>{x.classList.remove('sel');if(opts[k]===t)x.classList.add('good');else if(opts[k]===sel)x.classList.add('bad')});if(!hzOpt)say(t.ch);result(ok,ex)}};
+    box.appendChild(b)});
+}
+function rMatch(body,ex){
+  body.innerHTML='<div class="title">Хосыг нь тааруул</div><div class="match"><div class="col" id="mL"></div><div class="col" id="mR"></div></div>';
+  const L=shuffle(ex.ts),R=shuffle(ex.ts);let pick=null,left=ex.ts.length,miss=0;
+  const mk=(col,t,side)=>{const b=document.createElement('button');b.type='button';b.className='opt'+(side==='L'?' hz':'');if(side==='L')b.innerHTML=hzG(t.ch);else b.textContent=t.mn;b.dataset.ch=t.ch;b.dataset.side=side;
+    b.onclick=()=>{if(b.classList.contains('gone'))return;if(side==='L')say(t.ch);
+      if(!pick||pick.dataset.side===side){if(pick)pick.classList.remove('sel');pick=b;b.classList.add('sel');return}
+      if(pick.dataset.ch===b.dataset.ch){const a=pick;[a,b].forEach(x=>{x.classList.remove('sel');x.classList.add('good','pop')});if(!RM){const L=fxLayer();[a,b].forEach(x=>{const r=x.getBoundingClientRect();confetti(L,r.left+r.width/2,r.top+r.height/2,8,.45)});setTimeout(()=>L.remove(),1600)}tone([[880,0,.08]]);
+        setTimeout(()=>{[a,b].forEach(x=>{x.classList.remove('good');x.classList.add('gone')})},300);pick=null;
+        if(--left===0)setTimeout(()=>result(true,ex,miss?'Алдаа: '+miss:'Бүгдийг зөв тааруулсан'),350)}
+      else{miss++;const a=pick;[a,b].forEach(x=>{x.classList.remove('sel');x.classList.add('bad','shake')});setTimeout(()=>[a,b].forEach(x=>x.classList.remove('shake')),450);tone([[220,0,.15,'square']]);setTimeout(()=>[a,b].forEach(x=>x.classList.remove('bad')),400);pick=null}};
+    col.appendChild(b)};
+  L.forEach(t=>mk($('mL'),t,'L'));R.forEach(t=>mk($('mR'),t,'R'));
+}
+function finish(){
+  const acc=SS.graded?Math.round(SS.correct/SS.graded*100):100;
+  let xp=SS.mode==='learn'?10:SS.mode==='review'?15:10;if(SS.mistakes===0)xp+=5;
+  if(SS.node&&SS.mode==='learn')logNew(SS.node.chars.filter(c=>!P.srs[c]).length);
+  if(SS.node){P.done[SS.node.id]=1;if(SS.mode==='learn')SS.node.chars.forEach(c=>{if(!P.srs[c])P.srs[c]={b:1,d:addDays(1)}})}
+  if(SS.mode==='practice'){hearts();P.hearts.n=Math.min(5,P.hearts.n+1)}
+  const unitDone=SS.node&&NODES.filter(n=>n.u===SS.node.u).every(n=>P.done[n.id]);
+  addXp(xp);sWin();
+  const N=lvMeta(CURLV).n,LN=lvMeta(CURLV).name,after=lvLearned(CURLV),before=SS.before,setA=new Set(learned());
+  const setB=SS.bset;
+  const newReads=SS.mode==='learn'?readable(setA).filter(x=>![...x.ew.replace(/[…，,\s]/g,'')].every(c=>setB.has(c))).slice(0,6):[];
+  const crossed=milesFor(CURLV).filter(m=>before<m[0]&&after>=m[0]).pop();const nm=nextMile(after);
+  let grow='<div class="grow"><div class="row"><span>'+LN+' ахиц</span><b>'+after+' / '+N+(after>before?' <span style="color:var(--jade-d)">(+'+(after-before)+')</span>':'')+'</b></div><div class="pbar" style="height:12px"><i id="gfill" style="width:'+(before/N*100)+'%;background:var(--jade)"></i></div>'
+    +'<div class="row muted"><span>'+Math.round(after/N*100)+'% дууссан</span><span>'+(nm?nm[1]+' хүртэл '+(nm[0]-after):'Бүгдийг сурлаа!')+'</span></div></div>';
+  if(crossed)grow='<div class="mile"><div class="big-ic" style="line-height:0">'+IC.medal+'</div><div class="t">Шинэ шат: '+crossed[1]+'</div><div class="muted">'+crossed[0]+' ханз сурлаа!</div></div>'+grow;
+  if(unitDone)grow='<div class="mile" style="border-color:var(--jade);background:var(--jade-soft)"><div class="t" style="color:var(--jade-d)">'+(SS.node.u+1)+'-р бүлэг «'+esc(LESSONS[SS.node.u].t)+'» дууслаа!</div></div>'+grow;
+  if(newReads.length)grow+='<div class="muted">Одоо эдгээр үгийг уншиж чадна:</div><div class="reads">'+newReads.map(x=>'<span>'+esc(x.ew.replace('…',''))+'<small>'+esc(x.em)+'</small></span>').join('')+'</div>';
+  SS.grow=grow;
+  const secs=Math.round((Date.now()-SS.t0)/1000);const mm=Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+  $('sBar').style.width='100%';
+  if(!RM)setTimeout(()=>{const L=fxLayer();const w=innerWidth;[[w*.2,innerHeight*.35,0],[w*.8,innerHeight*.35,250],[w*.5,innerHeight*.25,500]].forEach(([x,y,d])=>setTimeout(()=>confetti(L,x,y,acc===100?40:26,1.3),d));setTimeout(()=>L.remove(),2600)},150);
+  $('sBody').innerHTML='<div class="end"><div class="big">'+(SS.mode==='practice'?'Давтлага дууслаа!':SS.mode==='review'?'Бүлэг давтаж дууслаа!':'Хичээл дууслаа!')+'</div>'
+    +(SS.node&&SS.mode==='learn'?'<div style="font:700 56px var(--hz);letter-spacing:8px">'+esc(SS.node.chars.join(''))+'</div>':'')
+    +'<div class="tiles"><div class="tile" style="--c:var(--gold-d)"><small>XP</small><b>+'+xp+'</b></div><div class="tile" style="--c:var(--jade)"><small>Нарийвчлал</small><b>'+acc+'%</b></div><div class="tile" style="--c:var(--sky)"><small>Хугацаа</small><b>'+mm+'</b></div></div>'
+    +SS.grow+'<div class="muted" style="display:flex;gap:6px;align-items:center;justify-content:center">'+IC.flame+streakNow()+' өдөр дараалан'+(SS.mode==='practice'?' · '+IC.heart+' +1 зүрх нөхөгдлөө':'')+'</div></div>';
+  setTimeout(()=>{const g=$('gfill');if(g)g.style.width=(after/N*100)+'%'},250);
+  setFoot('','','Үргэлжлүүлэх',true);onAct=()=>{SS=null;renderPath()};
+}
+function noHearts(inSession){
+  const left=Math.ceil((REGEN-(Date.now()-P.hearts.t))/60000);
+  show('s-sess');$('sBar').style.width='0';$('sHearts').innerHTML=IC.heart+' 0';
+  $('sBody').innerHTML='<div class="end"><div class="big-ic" style="line-height:0">'+IC.heartbreak+'</div><div class="big" style="color:var(--red)">Зүрх дууслаа</div><div class="muted">Дараагийн зүрх '+Math.max(1,left)+' минутын дараа нөхөгдөнө.<br>Давтлага хийвэл 1 зүрх шууд нөхөгдөнө.</div></div>';
+  if(learned().length){setFoot('','','Давтлага хийх',true);onAct=()=>startPractice()}else{setFoot('','<span class="s muted">Зүрх нөхөгдөхийг хүлээгээрэй</span>','Буцах',true);onAct=()=>{SS=null;renderPath()}}
+}
+function alertBox(h,s){show('s-sess');$('sBar').style.width='0';$('sBody').innerHTML='<div class="end"><div class="big">'+esc(h)+'</div><div class="muted">'+esc(s)+'</div></div>';setFoot('','','Буцах',true);onAct=()=>renderPath()}
+
+/* ---------- router ---------- */
+/* ================= PRO ================= */
+// Official HSK exam dates in Mongolia: fill from the official test centre schedule. Empty = manual date input.
+const EXAM_DATES=[];
+const isPro=()=>!!P.pro;
+const PRO_LEVELS=['L5','L6','L79'];
+const LVORDER=LEVELS.map(l=>l.id);
+const wk=()=>{const d=new Date();const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return dstr(d)};
+function stat(kind,ok){if(!kind)return;const w=wk();P.stats=P.stats||{};const s=P.stats[w]=P.stats[w]||{};const k=s[kind]=s[kind]||[0,0];k[1]++;if(ok)k[0]++}
+function logNew(n){if(!n)return;P.daylog=P.daylog||{};const d=today();P.daylog[d]=(P.daylog[d]||0)+n}
+const SKILLS=[['listen','Сонсгол',['listen']],['read','Уншлага',['meaning','char','pinyin','word']],['write','Бичих',['write','trace']]];
+function cumChars(lv){let s=0;for(const id of LVORDER){s+=lvMeta(id).n;if(id===lv)break}return s}
+function levelsUpTo(lv){const out=[];for(const id of LVORDER){out.push(id);if(id===lv)break}return out}
+async function ensureLevels(ids){await Promise.all(ids.map(loadLevel))}
+function markDoneAll(){LVORDER.forEach(id=>{const d=LD[id];if(d)d.nodes.forEach(n=>{if(!P.done[n.id]&&n.chars.every(c=>P.srs[c]))P.done[n.id]=1})})}
+
+/* ---------- generic quiz runner (placement + mock) ---------- */
+let QZ=null;
+function qzItem(kind,t,pool){return{kind,t,pool}}
+function startRunner(cfg){QZ=Object.assign({i:0,ok:0,t0:Date.now(),log:[]},cfg);show('s-sess');qzRender();if(QZ.limit){clearInterval(qzTick.h);qzTick.h=setInterval(qzTick,1000)}}
+function qzTick(){if(!QZ||!QZ.limit){clearInterval(qzTick.h);return}const left=Math.max(0,QZ.limit-Math.floor((Date.now()-QZ.t0)/1000));
+  $('sHearts').textContent=Math.floor(left/60)+':'+String(left%60).padStart(2,'0');if(left===0){clearInterval(qzTick.h);qzEnd()}}
+function qzEnd(){clearInterval(qzTick.h);const q=QZ;QZ=null;q.done(q)}
+function qzRender(){
+  const q=QZ;const it=q.next(q);
+  if(!it){return qzEnd()}
+  if(it.kind==='wait'){$('sBody').innerHTML='<div class="end"><div class="muted">Дараагийн түвшнийг ачаалж байна…</div></div>';setFoot('','','Шалгах',false);return}
+  q.cur=it;const body=$('sBody');body.innerHTML='';
+  $('sBar').style.width=Math.min(100,q.progress(q)*100)+'%';
+  if(!q.limit)$('sHearts').textContent=(q.i+1)+' / '+(q.max||'');
+  const t=it.t;let answered=false;
+  const finishItem=ok=>{if(answered)return;answered=true;q.log.push({kind:it.kind,lv:t.lv,ok,sec:it.sec});if(ok)q.ok++;stat(it.kind,ok);q.i++;save();setTimeout(()=>{if(QZ===q)qzRender()},q.feedback?650:120)};
+  setFoot('','<span class="s muted">'+esc(q.label||'')+'</span>','Шалгах',false);onAct=null;
+  if(it.kind==='write'){
+    body.innerHTML='<div class="title">Цээжээр бич</div><div class="prompt"><span class="t">'+esc(t.mn)+'</span><span class="muted" style="font-size:20px">'+esc(t.py)+'</span></div><div class="wbox" id="wb">'+GRID+'</div>';
+    const sz=wsize();const wb=$('wb');wb.style.width=wb.style.height=sz+'px';
+    const w=writer(wb,t.ch,sz,{showCharacter:false,showOutline:false});
+    w&&w.quiz({showHintAfterMisses:99,onComplete:s=>finishItem(s.totalMistakes<=2)});
+    setFoot('','<span class="s muted">'+esc(q.label||'')+'</span>','Мэдэхгүй',true);onAct=()=>{w&&w.cancelQuiz();finishItem(false)};return;
+  }
+  const key=it.kind==='meaning'||it.kind==='word'?'mn':it.kind==='pinyin'?'py':'ch';
+  const tt=it.kind==='word'?{ch:t.ew.replace('…',''),py:t.ep,mn:t.em}:t;
+  const pool=it.kind==='word'?it.pool.map(x=>({ch:x.ew,py:x.ep,mn:x.em})):it.pool;
+  const opts=shuffle([tt,...pickOthers(tt,key,3,pool)]);
+  let head='';
+  if(it.kind==='meaning')head='<div class="title">Энэ ханз ямар утгатай вэ?</div><div class="prompt"><span class="hz">'+hzG(t.ch)+'</span></div>';
+  if(it.kind==='word')head='<div class="title">Энэ үг ямар утгатай вэ?</div><div class="prompt"><span class="hz" style="font-size:56px">'+hzG(tt.ch)+'</span></div>';
+  if(it.kind==='pinyin')head='<div class="title">Яаж дууддаг вэ?</div><div class="prompt"><span class="hz">'+hzG(t.ch)+'</span></div>';
+  if(it.kind==='char')head='<div class="title">«'+esc(t.mn)+'» гэсэн ханзыг сонго</div>';
+  if(it.kind==='listen')head='<div class="title">Сонсоод зөв ханзыг сонго</div><div class="prompt"><button class="btn sky bigspk" type="button" id="sp">'+IC.speaker+'</button></div>';
+  body.innerHTML=head+'<div class="opts"></div><div class="skipline"><button type="button" id="idk">Мэдэхгүй байна</button></div>';
+  if(it.kind==='listen'){$('sp').onclick=()=>say(t.ch);setTimeout(()=>say(t.ch),250)}
+  const box=body.querySelector('.opts');const hz=key==='ch';let sel=null;
+  opts.forEach((o,i)=>{const b=document.createElement('button');b.type='button';b.className='opt'+(hz?' hz':'');b.innerHTML='<span class="k">'+(i+1)+'</span>'+(hz?hzG(o[key]):esc(o[key]));
+    b.onclick=()=>{if(answered)return;[...box.children].forEach(x=>x.classList.remove('sel'));b.classList.add('sel');sel=o;setFoot('','','Шалгах',true);
+      onAct=()=>{const ok=sel===tt;if(q.feedback){[...box.children].forEach((x,k)=>{x.classList.remove('sel');if(opts[k]===tt)x.classList.add('good');else if(opts[k]===sel)x.classList.add('bad')})}finishItem(ok)}};box.appendChild(b)});
+  $('idk').onclick=()=>finishItem(false);
+}
+
+/* ---------- placement test ---------- */
+async function startPlacement(){
+  toast('Шалгалт бэлдэж байна…',3000);
+  try{await ensureLevels(['L1','L2'])}catch(e){toast('Ачаалж чадсангүй');return}
+  const kinds=['meaning','char','listen','pinyin'];
+  const st={idx:1,asked:0,res:{},dir:0,lvItems:[],busy:false};
+  startRunner({label:'Түвшин тогтоох шалгалт',max:40,feedback:false,
+    progress:q=>q.i/40,
+    next:q=>{
+      if(st.lvItems.length)return st.lvItems.shift();
+      if(!st.fresh){
+        if(q.log.length){const lv=LVORDER.at(st.idx);const L=q.log.filter(x=>x.lv===lv);const pct=L.filter(x=>x.ok).length/Math.max(1,L.length);st.res[lv]=pct;
+          let nx=null;if(pct>=0.75&&st.dir>=0&&st.idx<6){nx=st.idx+1;st.dir=1}else if(pct<0.4&&st.dir<=0&&st.idx>0&&st.res[LVORDER.at(st.idx-1)]===undefined){nx=st.idx-1;st.dir=-1}
+          if(nx===null||q.i>=40)return null;st.idx=nx}
+        st.fresh=true}
+      const id=LVORDER.at(st.idx),d=LD[id];
+      if(!d){if(!st.loading){st.loading=1;loadLevel(id).then(()=>{st.loading=0;if(QZ===q)qzRender()}).catch(()=>{if(QZ===q)qzEnd()})}return{kind:'wait'}}
+      st.fresh=false;st.lvItems=shuffle(d.all).slice(0,6).map((t,i)=>qzItem(kinds[i%4],t,d.all));return st.lvItems.shift();
+    },
+    done:q=>placementDone(q,st)});
+}
+function placementDone(q,st){
+  // levels below the highest passed level count as mastered
+  const res={};let topPass=-1;LVORDER.forEach((id,i)=>{if(st.res[id]!==undefined&&st.res[id]>=0.75)topPass=Math.max(topPass,i)});
+  LVORDER.forEach((id,i)=>{res[id]=st.res[id]!==undefined?st.res[id]:(i<topPass?0.95:(i<1&&st.res.L2>=0.4?0.9:0))});
+  let known=0;LVORDER.forEach(id=>known+=Math.round(lvMeta(id).n*res[id]));
+  const start=LVORDER.find(id=>res[id]<0.75)||'L79';
+  P.placement={date:today(),res,known,start,asked:q.log.length,acc:q.ok/Math.max(1,q.log.length)};
+  // mastered levels: mark chars learned, spread first reviews over two weeks
+  LVORDER.forEach(id=>{if(res[id]>=0.75&&LD[id]){LD[id].all.forEach((x,k)=>{if(!P.srs[x.ch])P.srs[x.ch]={b:2,d:addDays(1+(k%14))}})}});
+  markDoneAll();save();
+  const bars=LVORDER.filter(id=>st.res[id]!==undefined||res[id]>0).map(id=>'<div class="lvres"><span>'+lvMeta(id).name+'</span><div class="pbar"><i style="width:'+Math.round(res[id]*100)+'%;background:'+(res[id]>=0.75?'var(--jade)':'var(--gold)')+'"></i></div><b>'+Math.round(res[id]*100)+'%</b></div>').join('');
+  $('sBar').style.width='100%';$('sHearts').textContent='';
+  $('sBody').innerHTML='<div class="end"><div class="big">Шалгалт дууслаа</div><div class="muted">Та ойролцоогоор <b style="color:var(--ink)">'+known+'</b> ханз мэднэ</div><div class="lvbars">'+bars+'</div><div class="note2">Эхлэх цэг: <b>'+lvMeta(start).name+'</b>. Эзэмшсэн түвшний ханзууд давтлагад орлоо.</div></div>';
+  setFoot('','','Төлөвлөгөө гаргах',true);onAct=()=>startSurvey();
+}
+
+/* ---------- questionnaire ---------- */
+const SURVEY=[
+ {k:'goal',q:'Юуны төлөө хятад хэл сурч байна вэ?',o:[['scholar','Тэтгэлэг, сургууль'],['work','Ажил'],['travel','Аялал'],['fun','Сонирхол']]},
+ {k:'target',q:'Аль түвшний HSK шалгалт өгөх вэ?',o:LEVELS.map(l=>[l.id,l.name]).concat([['none','Шалгалт өгөхгүй']])},
+ {k:'date',q:'Хэзээ өгөх вэ?',date:1},
+ {k:'format',q:'Шалгалтын хэлбэр?',o:[['paper','Цаасан'],['ibt','Компьютерт'],['unk','Мэдэхгүй']]},
+ {k:'minutes',q:'Өдөрт хэдэн минут гаргаж чадах вэ?',o:[[10,'10 минут'],[20,'20 минут'],[30,'30 минут'],[45,'45 минут'],[60,'60+ минут']]},
+ {k:'dpw',q:'Долоо хоногт хэдэн өдөр хичээллэх вэ?',o:[[3,'3 өдөр'],[4,'4 өдөр'],[5,'5 өдөр'],[6,'6 өдөр'],[7,'7 өдөр']]},
+ {k:'weak',q:'Аль хэсэгт сул вэ? (олныг сонгож болно)',multi:1,o:[['listen','Сонсгол'],['read','Уншлага'],['write','Бичих'],['tone','Аялга']]}
+];
+function startSurvey(){QZ=null;const ans=Object.assign({},P.survey||{});let i=0;show('s-sess');
+  const draw=()=>{
+    while(i<SURVEY.length&&((SURVEY[i].k==='date'||SURVEY[i].k==='format')&&ans.target==='none'))i++;
+    if(i>=SURVEY.length){P.survey=ans;save();location.hash='pro';renderPro();const nx=nextPlanNode();if(nx)loadLevel(nx.lv).then(()=>{const n2=nextPlanNode();if(n2&&LD[n2.lv]){setLevel(n2.lv);renderPath.scrolled=0}}).catch(()=>{});return}
+    const s=SURVEY[i];$('sBar').style.width=(i/SURVEY.length*100)+'%';$('sHearts').textContent=(i+1)+' / '+SURVEY.length;
+    let html='<div class="title">'+esc(s.q)+'</div>';
+    if(s.date){
+      const fut=EXAM_DATES.filter(d=>d>today());
+      if(fut.length)html+='<div class="chipsel">'+fut.map(d=>'<button type="button" class="opt" data-v="'+d+'">'+d.replace(/-/g,'.')+'</button>').join('')+'<button type="button" class="opt" data-v="">Тодорхойгүй</button></div>';
+      else html+='<p class="muted">Монгол дахь HSK төвийн албан ёсны хуваарь удахгүй нэмэгдэнэ. Одоохондоо огноогоо оруулна уу.</p><input type="date" id="dIn" class="din" min="'+addDays(14)+'" value="'+(ans.date||'')+'"><div class="chipsel" style="margin-top:10px"><button type="button" class="opt" data-v="">Тодорхойгүй</button></div>';
+    }else html+='<div class="chipsel">'+s.o.map(o=>'<button type="button" class="opt'+((s.multi?(ans[s.k]||[]).includes(o[0]):ans[s.k]===o[0])?' sel':'')+'" data-v="'+o[0]+'">'+esc(o[1])+'</button>').join('')+'</div>';
+    $('sBody').innerHTML=html;
+    const ok=()=>{const v=ans[s.k];setFoot('','','Үргэлжлүүлэх',s.multi||s.date||v!==undefined)};
+    $('sBody').querySelectorAll('.chipsel .opt').forEach(b=>b.onclick=()=>{let v=b.dataset.v;if(s.k==='minutes'||s.k==='dpw')v=+v;
+      if(s.multi){const a=ans[s.k]=ans[s.k]||[];const j=a.indexOf(v);j<0?a.push(v):a.splice(j,1);b.classList.toggle('sel')}
+      else{ans[s.k]=v;$('sBody').querySelectorAll('.chipsel .opt').forEach(x=>x.classList.toggle('sel',x===b));if(s.date&&$('dIn'))$('dIn').value=''}ok()});
+    if($('dIn'))$('dIn').onchange=e=>{ans.date=e.target.value;ok()};
+    ok();onAct=()=>{if(s.date&&$('dIn')&&$('dIn').value)ans.date=$('dIn').value;i++;draw()};
+  };draw()}
+
+/* ---------- plan ---------- */
+function planCalc(){
+  const s=P.survey;if(!s)return null;
+  const minutes=s.minutes||20,dpw=s.dpw||5;
+  const target=s.target&&s.target!=='none'?s.target:null;
+  const tgt=target||(P.placement&&P.placement.start)||'L1';
+  const ids=levelsUpTo(tgt);const total=cumChars(tgt);
+  let known=0;ids.forEach(id=>{if(LD[id])known+=lvLearned(id);else if(P.placement)known+=Math.round(lvMeta(id).n*(P.placement.res[id]||0))});
+  const remaining=Math.max(0,total-known);
+  const cap=Math.max(2,Math.floor((minutes-10)/3));
+  let perDay,days=null,buffer=0,studyDays=null,finish,warn=null;
+  if(target&&s.date){days=Math.round((Date.parse(s.date)-Date.parse(today()))/864e5);buffer=Math.min(21,Math.floor(days*0.15));
+    studyDays=Math.max(1,Math.floor((days-buffer)*dpw/7));perDay=Math.max(1,Math.ceil(remaining/studyDays));finish=addDays(Math.max(0,days-buffer));
+    const need=perDay*3+10;if(need>minutes)warn={need,perDay}}
+  else{perDay=cap;const d=Math.ceil(remaining/perDay*7/dpw);finish=addDays(d)}
+  const doneToday=(P.daylog||{})[today()]||0;
+  return{target,tgt,total,known,remaining,perDay,days,buffer,studyDays,finish,warn,minutes,dpw,doneToday,date:s.date,weak:s.weak||[]};
+}
+function nextPlanNode(){const p=planCalc();const ids=p?levelsUpTo(p.tgt):LVORDER;for(const id of ids){const d=LD[id];if(!d)return{lv:id,load:true};const n=d.nodes.find(n=>!P.done[n.id]);if(n)return{lv:id,node:n}}return null}
+async function continuePlan(){let nx=nextPlanNode();if(!nx){toast('Төлөвлөгөөний бүх хичээл дууссан!',0,IC.trophy);return}
+  if(nx.load){toast('Ачаалж байна…',3000);await loadLevel(nx.lv);nx=nextPlanNode()}
+  setLevel(nx.lv);startNode(nx.node)}
+
+/* ---------- mock test ---------- */
+async function startMock(lv){
+  toast(lvMeta(lv).name+' жишээ шалгалт бэлдэж байна…',3000);try{await loadLevel(lv)}catch(e){return}
+  const d=LD[lv],all=shuffle(d.all),wr=['L1','L2'].includes(lv)?0:5;
+  const items=[];all.slice(0,10).forEach(t=>items.push(Object.assign(qzItem('listen',t,d.all),{sec:'L'})));
+  const rk=['meaning','char','pinyin','word'];all.slice(10,25).forEach((t,i)=>items.push(Object.assign(qzItem(rk[i%4],t,d.all),{sec:'R'})));
+  all.slice(25,25+wr).forEach(t=>items.push(Object.assign(qzItem('write',t,d.all),{sec:'W'})));
+  startRunner({label:lvMeta(lv).name+' · жишээ шалгалт',max:items.length,limit:20*60,feedback:false,
+    progress:q=>q.i/items.length,next:q=>items[q.i]||null,
+    done:q=>{const sec=k=>{const L=q.log.filter(x=>x.sec===k);const tot=items.filter(x=>x.sec===k).length;return tot?Math.round(L.filter(x=>x.ok).length/tot*100):null};
+      const L=sec('L'),R=sec('R'),W=sec('W');const total=W===null?Math.round((L+R)*1.5):L+R+W;
+      P.mocks=P.mocks||[];P.mocks.push({lv,date:today(),L,R,W,total});save();
+      const pass=total>=180;sWin();
+      $('sBar').style.width='100%';$('sHearts').textContent='';
+      const row=(n,v)=>v===null?'':'<div class="lvres"><span>'+n+'</span><div class="pbar"><i style="width:'+v+'%;background:var(--sky)"></i></div><b>'+v+'</b></div>';
+      $('sBody').innerHTML='<div class="end"><div class="big" style="color:'+(pass?'var(--jade-d)':'var(--red)')+'">'+total+' / 300</div><div class="muted">'+(pass?'Тэнцэх оноо (180+)':'Тэнцэхэд '+(180-total)+' оноо дутуу')+'</div><div class="lvbars">'+row('Сонсгол',L)+row('Уншлага',R)+row('Бичих',W)+'</div><div class="note2">Аппын жишээ шалгалт нь жинхэнэ шалгалтаас богино (30 хүртэл асуулт, 20 минут). Оноо нь ойролцоо үнэлгээ.</div></div>';
+      setFoot('','','Pro руу буцах',true);onAct=()=>{location.hash='pro';renderPro()}}});
+}
+
+/* ---------- report ---------- */
+function weeksBack(n){const out=[];const d=new Date(Date.parse(wk()));for(let i=n-1;i>=0;i--){const x=new Date(d);x.setDate(x.getDate()-7*i);out.push(dstr(x))}return out}
+function skillPct(w,skill){const s=(P.stats||{})[w]||{};let ok=0,t=0;skill[2].forEach(k=>{if(s[k]){ok+=s[k][0];t+=s[k][1]}});return t?Math.round(ok/t*100):null}
+function reportSVG(){
+  const ws=weeksBack(6),cols=['var(--sky)','var(--jade)','var(--gold-d)'];const W=560,H=200,x0=40,y0=16,ch=150,gw=(W-x0-8)/ws.length,bw=Math.min(18,(gw-12)/3);
+  let bars='';ws.forEach((w,i)=>SKILLS.forEach((sk,j)=>{const v=skillPct(w,sk);if(v===null)return;const h=ch*v/100;bars+='<rect x="'+(x0+i*gw+6+j*(bw+2))+'" y="'+(y0+ch-h)+'" width="'+bw+'" height="'+h+'" rx="3" fill="'+cols[j]+'"><title>'+sk[1]+' '+v+'%</title></rect>'}));
+  const grid=[0,50,100].map(v=>'<line x1="'+x0+'" x2="'+W+'" y1="'+(y0+ch-ch*v/100)+'" y2="'+(y0+ch-ch*v/100)+'" stroke="var(--line)"/><text x="'+(x0-6)+'" y="'+(y0+ch-ch*v/100+4)+'" text-anchor="end" font-size="11" fill="var(--muted)">'+v+'%</text>').join('');
+  const labels=ws.map((w,i)=>'<text x="'+(x0+i*gw+gw/2)+'" y="'+(y0+ch+18)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+w.slice(5).replace('-','.')+'</text>').join('');
+  return '<svg viewBox="0 0 '+W+' '+H+'" class="rep" role="img" aria-label="Чадвар тус бүрийн зөв хариултын хувь, долоо хоногоор">'+grid+bars+labels+'</svg><div class="legend">'+SKILLS.map((s,j)=>'<span><i style="background:'+cols[j]+'"></i>'+s[1]+'</span>').join('')+'</div>';
+}
+function passChance(){const m=(P.mocks||[]).slice(-3);if(!m.length)return null;const avg=m.reduce((a,x)=>a+x.total,0)/m.length;return{avg:Math.round(avg),p:Math.max(5,Math.min(95,Math.round((avg-140)/80*100)))}}
+
+/* ---------- Pro screen ---------- */
+function renderPro(){
+  show('s-pro');window.scrollTo(0,0);const el=$('proBody');
+  if(!isPro()){
+    el.innerHTML='<div class="prohero"><div class="protag">PRO</div><h1>Шалгалтандаа зорилготой бэлд</h1><p class="muted">Түвшнээ тогтоож, шалгалтын огноонд тань тааруулсан өдөр бүрийн төлөвлөгөө гаргана.</p></div>'
+      +'<div class="feat">'+[[IC.flag,'Түвшин тогтоох шалгалт','10 минутад хаанаас эхлэхээ мэднэ'],[IC.bolt,'Хувийн төлөвлөгөө','Шалгалтын огноо, өдрийн цагт тааруулна'],[IC.trophy,'Жишээ шалгалт (mock test)','Цагтай, 300 онооны системээр'],[IC.sparkle,'Ахицын тайлан','Чадвар тус бүрээр хэр сайжирснаа харна'],[IC.star,'HSK 5–9','Бүх ахисан түвшин нээгдэнэ'],[IC.heart,'Зүрх хязгааргүй','Алдаа гаргаад зогсохгүй']].map(f=>'<div class="fi">'+f[0]+'<div><b>'+f[1]+'</b><span class="muted">'+f[2]+'</span></div></div>').join('')+'</div>'
+      +'<button class="btn go wide" id="proOn" type="button">Pro-г туршиж идэвхжүүлэх</button><p class="muted" style="text-align:center;font-size:13px">Төлбөрийн систем удахгүй нэмэгдэнэ. Одоохондоо үнэгүй туршина.</p>';
+    $('proOn').onclick=()=>{P.pro={since:today()};save();toast('Pro идэвхжлээ',0,IC.crown);renderPro()};return}
+  const p=planCalc();let html='';
+  if(!P.placement){html+='<div class="pcard accent"><h2>Эхлээд түвшнээ тогтооё</h2><p class="muted">30–40 асуулт · 10 минут орчим. Мэдэхгүй асуултад «Мэдэхгүй» гэж дараарай.</p><button class="btn go" id="pPlace" type="button">Шалгалт эхлэх</button></div>'}
+  else if(!P.survey){html+='<div class="pcard accent"><h2>Төлөвлөгөөгөө гаргая</h2><p class="muted">7 асуултад хариулна уу · 1 минут</p><button class="btn go" id="pSurvey" type="button">Асуулга бөглөх</button></div>'}
+  else{
+    const tgtName=p.target?lvMeta(p.target).name:lvMeta(p.tgt).name+' (зорилтгүй)';
+    const pct=Math.round(p.known/p.total*100);
+    html+='<div class="pcard"><div class="row2"><div><span class="muted">Зорилт</span><h2>'+esc(tgtName)+(p.date?' · '+p.date.replace(/-/g,'.'):'')+'</h2></div><div class="bigpct">'+pct+'%</div></div>'
+      +'<div class="pbar" style="height:12px"><i style="width:'+pct+'%;background:var(--jade)"></i></div>'
+      +'<div class="kpis"><div><b>'+p.perDay+'</b><span>шинэ ханз / өдөр</span></div><div><b>'+p.remaining+'</b><span>үлдсэн ханз</span></div><div><b>'+(p.days!==null?p.days:'—')+'</b><span>шалгалт хүртэл өдөр</span></div></div>'
+      +'<div class="phases">'+[['Нөхөх / шинэ материал',p.finish?'— '+p.finish.replace(/-/g,'.')+' хүртэл':''],['Шалгалтын бэлтгэл',p.buffer?'сүүлийн '+p.buffer+' өдөр: жишээ шалгалт, давтлага':'зорилтот огноо оруулбал гарна']].map((x,i)=>'<div class="ph"><span class="dotn">'+(i+1)+'</span><div><b>'+x[0]+'</b><span class="muted">'+x[1]+'</span></div></div>').join('')+'</div>'
+      +(p.warn?'<div class="warnbox">Өдөрт '+p.perDay+' ханз сурахад ~'+p.warn.need+' минут хэрэгтэй, та '+p.minutes+' минут гэж хэлсэн. Өдрийн минутаа нэмэх, огноогоо хойшлуулах эсвэл зорилтоо бууруулах уу? <button type="button" class="linkb" id="pFix">Асуулгаа засах</button></div>':'')
+      +'</div>';
+    const done=Math.min(p.doneToday,p.perDay);
+    html+='<div class="pcard"><h2>Өнөөдрийн даалгавар</h2><div class="todo"><div><b>'+done+' / '+p.perDay+'</b><span class="muted">шинэ ханз</span><div class="pbar"><i style="width:'+(done/p.perDay*100)+'%;background:var(--gold)"></i></div></div><div><b>'+dueList().length+'</b><span class="muted">давтах ханз</span></div></div>'
+      +'<div class="row3"><button class="btn go" id="pGo" type="button">Хичээл үргэлжлүүлэх</button><button class="btn sky" id="pRev" type="button">Давтах</button></div></div>';
+  }
+  const pc=passChance();
+  html+='<div class="pcard"><h2>Жишээ шалгалт</h2><p class="muted">Сонсгол · уншлага · бичих, 20 минут. 180+ оноо = тэнцэнэ.</p>'+(pc?'<div class="pass">Сүүлийн шалгалтуудын дундаж <b>'+pc.avg+'</b> · тэнцэх магадлал ойролцоогоор <b>'+pc.p+'%</b></div>':'')
+    +'<div class="mockgrid">'+LEVELS.map(l=>{const last=(P.mocks||[]).filter(m=>m.lv===l.id).slice(-1)[0];return '<button type="button" class="mockb" data-lv="'+l.id+'"><b>'+l.name+'</b><span>'+(last?last.total+' оноо':'эхлэх')+'</span></button>'}).join('')+'</div></div>';
+  html+='<div class="pcard"><h2>Ахицын тайлан</h2><p class="muted">Чадвар тус бүрийн зөв хариултын хувь, долоо хоногоор</p>'+reportSVG()
+    +'<div class="kpis">'+(()=>{const ws=weeksBack(2);const nw=Object.entries(P.daylog||{}).filter(([d])=>d>=ws[1]).reduce((a,[,v])=>a+v,0);return '<div><b>'+learned().length+'</b><span>нийт сурсан ханз</span></div><div><b>'+nw+'</b><span>энэ долоо хоногт шинэ</span></div><div><b>'+((P.mocks||[]).length)+'</b><span>жишээ шалгалт</span></div>'})()+'</div></div>';
+  html+='<div class="pcard"><h2>Тохиргоо</h2><div class="row3"><button class="btn" id="pRePlace" type="button">Түвшнээ дахин шалгах</button><button class="btn" id="pReSurvey" type="button">Асуулгаа засах</button></div>'+(P.placement?'<p class="muted" style="font-size:13px">Сүүлд шалгасан: '+P.placement.date.replace(/-/g,'.')+' · ~'+P.placement.known+' ханз</p>':'')+'</div>';
+  el.innerHTML=html;
+  const on=(id,f)=>{const b=$(id);if(b)b.onclick=f};
+  on('pPlace',startPlacement);on('pRePlace',startPlacement);on('pSurvey',startSurvey);on('pReSurvey',startSurvey);on('pFix',startSurvey);
+  on('pGo',continuePlan);on('pRev',()=>startPractice());
+  el.querySelectorAll('.mockb').forEach(b=>b.onclick=()=>startMock(b.dataset.lv));
+}
+function renderToday(){const el=$('todayCard');if(!el)return;
+  if(!isPro()||!P.survey){el.hidden=false;const step=!isPro()?'Pro-г идэвхжүүлээд':!P.placement?'Түвшнээ шалгаад':'Асуулгаа бөглөөд';
+    el.innerHTML='<div class="row"><span><b>Хувийн төлөвлөгөө</b><br><span class="muted" style="font-size:13px">'+step+' шалгалтын огноонд тань тааруулсан төлөвлөгөө гаргана</span></span><button class="btn go sm" id="tPlan" type="button">Гаргах</button></div>';
+    $('tPlan').onclick=()=>{location.hash='pro'};return}const p=planCalc();el.hidden=false;
+  const done=Math.min(p.doneToday,p.perDay);
+  el.innerHTML='<div class="row"><span><b>Өнөөдрийн төлөвлөгөө</b> <span class="muted">· '+done+' / '+p.perDay+' шинэ ханз</span></span><button class="btn go sm" id="tGo" type="button">Үргэлжлүүлэх</button></div><div class="pbar"><i style="width:'+(done/p.perDay*100)+'%;background:var(--gold)"></i></div>';
+  $('tGo').onclick=continuePlan}
+
+$('proBtn').onclick=()=>{location.hash='pro'};$('proBack').onclick=()=>{location.hash=''};
+function route(){if(location.hash==='#pro'){QZ=null;renderPro();return}if(location.hash==='#me'){renderMe();return}if(location.hash==='#basics')renderBasics();else if(!SS)renderPath()}
+window.addEventListener('hashchange',route);
+if(typeof HanziWriter==='undefined')document.body.insertAdjacentHTML('afterbegin','<p style="padding:16px">Зурлагын сан ачаалагдсангүй. Хуудсаа дахин ачаална уу.</p>');
+hydrate();
+$('bnav').querySelectorAll('button').forEach(b=>b.onclick=()=>{const g=b.dataset.go;if(g==='prac'){startPractice();return}location.hash=g==='path'?'':g;if(g==='path')route()});
+document.querySelectorAll('.lights').forEach(l=>l.innerHTML=lightsSVG());$('nySw').innerHTML=SNOWIC;$('nySw').onclick=()=>{try{localStorage.setItem('hanzi-ny',nyOn()?'off':'on')}catch(e){}nyApply()};nyApply();
+setInterval(()=>{if(!$('s-path').hidden)$('tHearts').textContent=hearts()},60000);
+$('path').innerHTML='<p class="muted" style="text-align:center;padding:40px 0">Ачаалж байна…</p>';
+loadLevels().then(route).catch(()=>{$('path').innerHTML='<p class="muted" style="text-align:center;padding:40px 0">Ачаалж чадсангүй. Хуудсаа дахин ачаална уу.</p>'});
+</script>
+</body>
+</html>
