@@ -23,7 +23,7 @@
 ⚠️ `hanz-ehlel-upload.p12` болон нууц үгийг **репо руу хэзээ ч бүү оруул**. Компьютер болон Google Drive дээрээ хоёр газар нөөцөл. Play App Signing ашигладаг тул алдсан ч Play Console-оос upload key солиулж болно, гэхдээ хэдэн хоног зарцуулна.
 
 ### Нууцлалын бодлого
-`privacy.html` доторх `[ИМЭЙЛ ХАЯГ]` ба `[EMAIL ADDRESS]` хэсгийг холбоо барих имэйлээрээ сольж бичнэ. Холбоос:
+Холбоо барих имэйл: `hanzehlel.help@gmail.com` (privacy, terms, help хуудсанд орсон).
 https://englishbetter88-commits.github.io/Chinese-learning/privacy.html
 
 ### Нэвтрэх (Google · Facebook · Имэйл)
