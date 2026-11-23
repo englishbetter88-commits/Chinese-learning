@@ -1,0 +1,94 @@
+name: Android build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HAS_KEY: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      SB_URL: ${{ vars.SB_URL }}
+      SB_KEY: ${{ vars.SB_KEY }}
+      SB_APPLE: ${{ vars.SB_APPLE }}
+      RC_ANDROID: ${{ vars.RC_ANDROID }}
+      RC_IOS: ${{ vars.RC_IOS }}
+      ADMOB_APP_ID_ANDROID: ${{ vars.ADMOB_APP_ID_ANDROID }}
+      ADMOB_APP_ID_IOS: ${{ vars.ADMOB_APP_ID_IOS }}
+      ADMOB_REWARDED_ANDROID: ${{ vars.ADMOB_REWARDED_ANDROID }}
+      ADMOB_REWARDED_IOS: ${{ vars.ADMOB_REWARDED_IOS }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install
+        run: npm ci
+
+      - name: Copy the web app into www/
+        run: npm run prep
+
+      - name: Safety check (code parses, pages exist)
+        run: node scripts/check-web.js
+
+      - name: Create the Android project
+        run: npx cap add android
+
+      - name: Sign-in return link (Google / Facebook)
+        run: node scripts/patch-native.js
+
+      - name: App icon and splash screen
+        run: npm run icons
+
+      - name: Sync
+        run: npx cap sync android
+
+      - name: Set version number
+        run: |
+          sed -i "s/versionCode 1$/versionCode ${{ github.run_number }}/" android/app/build.gradle
+          sed -i "s/versionName \"1.0\"/versionName \"1.0.${{ github.run_number }}\"/" android/app/build.gradle
+          grep -n "versionCode\|versionName" android/app/build.gradle
+
+      - name: Build test APK (install directly on a phone)
+        working-directory: app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hanz-ehlel-test-apk
+          path: app/android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Build and sign Play Store bundle (AAB)
+        if: env.HAS_KEY == 'true'
+        working-directory: app/android
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          ./gradlew bundleRelease --no-daemon
+          echo "$KS" | base64 -d > upload.p12
+          jarsigner -storetype PKCS12 -keystore upload.p12 -storepass "$KS_PASS" \
+            app/build/outputs/bundle/release/app-release.aab "$KEY_ALIAS"
+          rm upload.p12
+          jarsigner -verify app/build/outputs/bundle/release/app-release.aab | tail -1
+
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_KEY == 'true'
+        with:
+          name: hanz-ehlel-play-store-aab
+          path: app/android/app/build/outputs/bundle/release/app-release.aab

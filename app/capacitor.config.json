@@ -1,0 +1,7 @@
+{
+  "appId": "mn.hanzehlel.app",
+  "appName": "Ханз эхлэл",
+  "webDir": "www",
+  "android": { "allowMixedContent": false },
+  "ios": { "contentInset": "never" }
+}

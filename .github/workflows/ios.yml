@@ -1,0 +1,50 @@
+name: iOS build check
+
+# Builds the iPhone app for the simulator, without signing, to prove it compiles.
+# App Store upload is added once the Apple Developer account and certificates exist.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    env:
+      SB_URL: ${{ vars.SB_URL }}
+      SB_KEY: ${{ vars.SB_KEY }}
+      SB_APPLE: ${{ vars.SB_APPLE }}
+      RC_ANDROID: ${{ vars.RC_ANDROID }}
+      RC_IOS: ${{ vars.RC_IOS }}
+      ADMOB_APP_ID_ANDROID: ${{ vars.ADMOB_APP_ID_ANDROID }}
+      ADMOB_APP_ID_IOS: ${{ vars.ADMOB_APP_ID_IOS }}
+      ADMOB_REWARDED_ANDROID: ${{ vars.ADMOB_REWARDED_ANDROID }}
+      ADMOB_REWARDED_IOS: ${{ vars.ADMOB_REWARDED_IOS }}
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - run: npm ci
+      - run: npm run prep
+      - run: node scripts/check-web.js
+      - run: npx cap add ios
+      - run: node scripts/patch-native.js
+      - run: npm run icons
+      - run: npx cap sync ios
+
+      - name: Build for simulator
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -sdk iphonesimulator -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO build | tail -20
